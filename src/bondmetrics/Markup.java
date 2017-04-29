@@ -81,11 +81,18 @@ public class Markup {
 		ArrayList<String> col_headers = null;
 		ArrayList<String> row_headers = new ArrayList<String>();
 		ArrayList<Integer> data_col_duplication_coefficients = new ArrayList<Integer>(); 
-		ArrayList<Integer> data_row_duplication_coefficients = new ArrayList<Integer>(); 
+		ArrayList<Integer> data_row_duplication_coefficients = new ArrayList<Integer>();
+        /*
+         * By default, times are set in terms of years to maturity.  But if the field 'time_month_mode' is true, then
+         * times are set in terms of months to maturity.  This field is set to be true if Schedule sees time settings
+         * "mo" or "yr" (e.g., 7mo for "7 months") when parsing the markup schedule.
+         */
+        private boolean time_month_mode;
 		
 		public Schedule(InputStream csvInputStream) {
 			Reader reader = new InputStreamReader(csvInputStream);
 			BufferedReader csvInput = new BufferedReader(reader);
+			this.time_month_mode = false;
             this.dims.add(new Schedule_dimension()); // columns 
             this.dims.add(new Schedule_dimension()); // rows 
             try {
@@ -102,7 +109,7 @@ public class Markup {
 						this.col_headers = stringArrayToArrayList(line_no_row_header.split(","));
                         Double col_greater_or_equal_to = null;
 						for (int x = 0; x < this.col_headers.size(); x++) {
-							String col_header = translate_time_units(this.col_headers.get(x));
+							String col_header = this.translate_time_units(this.col_headers.get(x));
 							if (col_header.equals(Markup.WILD_CARD)) {
 								if (this.col_headers.size() > 1) {
 									throw new RuntimeException("> 1 col header not allowed w/ wildcard:" + line);
@@ -135,7 +142,7 @@ public class Markup {
 						}
                     }
                     else {
-                        String row_header = translate_time_units(line.replaceAll(",.*", ""));
+                        String row_header = this.translate_time_units(line.replaceAll(",.*", ""));
                         if (row_header.equals(Markup.WILD_CARD)) {
                             if (this.row_headers.size() > 1) {
                                 throw new RuntimeException("> 1 header is not allowed w/ wildcard:" + line);
@@ -201,13 +208,15 @@ public class Markup {
          * 1yr-2yr		12-35
          * 
 		 */
-        public static String translate_time_units(String header) {
+        public String translate_time_units(String header) {
         	if (header.matches("\\d+mo\\+?$") || header.matches("\\d+-\\d+mo\\+?$")) {
+                this.time_month_mode = true;
         		header = header.replaceAll("mo$", "");
         		header = header.replaceAll("mo\\+$", "+");
         		return header;
         	}
         	if (header.matches("\\d+yr\\+?$") || header.matches("\\d+-\\d+yr\\+?$")) {
+                this.time_month_mode = true;
         		header = header.replaceAll("yr$", "");
         		header = header.replaceAll("yr\\+$", "+");
                 // simplify by treating all headers as ranges, e.g., treat "1yr" as if it were "1-1yr"
@@ -327,7 +336,7 @@ public class Markup {
             return sb.toString();
         }
 	}
-
+	
 	private static final String WILD_CARD = "*";
 	
 	protected Date maturity;
@@ -408,18 +417,24 @@ public class Markup {
      */
 	public double calculate() {
         Schedule schedule = Markup.type_to_schedule.get(this.type);
-        long years_to_maturity = calculate_years_to_maturity();
+        long time_to_maturity;
+        if (schedule.time_month_mode) {
+        	time_to_maturity= calculate_months_to_maturity();
+        }
+        else {
+        	time_to_maturity= calculate_years_to_maturity();
+        }
         String[] dimension_keys = null;
         if (rating != null) {
-        	String[] z = { "" + years_to_maturity, rating.toString() };
+        	String[] z = { "" + time_to_maturity, rating.toString() };
         	dimension_keys = z;
         }
         else if (schedule.dims.get(0).is_wildcard) {
-        	String[] z = { WILD_CARD, "" + years_to_maturity };
+        	String[] z = { WILD_CARD, "" + time_to_maturity };
         	dimension_keys = z;
         }
         else if (schedule.dims.get(1).is_wildcard) {
-        	String[] z = { "" + years_to_maturity, WILD_CARD };
+        	String[] z = { "" + time_to_maturity, WILD_CARD };
         	dimension_keys = z;
         }
         else {
@@ -428,6 +443,13 @@ public class Markup {
         return schedule.get_markup(dimension_keys, this.price);
     }
 
+	protected long calculate_months_to_maturity() {
+		Date now = new Date();
+        @SuppressWarnings("deprecation")
+		long months = ((maturity.getYear() - now.getYear()) * 12) + maturity.getMonth() - now.getMonth();
+		return months;
+	}
+	
 	protected long calculate_years_to_maturity() {
 		long t_now = new Date().getTime();
         long t_maturity = this.maturity.getTime();
@@ -544,16 +566,18 @@ public class Markup {
      * All bonds are marked up $0.45.
      *
      */
-    static public void load_markup_schedule(Type type, String s) {
+    static public Schedule load_markup_schedule(Type type, String s) {
     	InputStream is = new ByteArrayInputStream(s.getBytes());
-    	load_markup_schedule(type, is);
+    	return load_markup_schedule(type, is);
 	}
 
     /*
      * Load a markup schedule from an input stream.
      */
-    static public void load_markup_schedule(Type type, InputStream in) {
-        type_to_schedule.put(type, new Schedule(in));
+    static public Schedule load_markup_schedule(Type type, InputStream in) {
+        Schedule sch = new Schedule(in);
+        type_to_schedule.put(type, sch);
+        return sch;
 	}
 
 	/*
@@ -567,6 +591,10 @@ public class Markup {
     }
 	
 	static public void main(String[] argv) {
+		if (argv.length == 0) {
+			System.err.println("Args required.");
+			return;
+		}
 		Markup.Type type = Markup.Type.valueOf(argv[0]);
 		double price = Double.parseDouble(argv[1]);
 		int maturity_month = Integer.parseInt(argv[2]);

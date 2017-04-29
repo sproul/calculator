@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import bondmetrics.Markup.Schedule;
 import bondmetrics.Markup.Type;
 
 public class MarkupTest {
@@ -255,7 +256,7 @@ public class MarkupTest {
     @Test
 	public void test_matthew_v0_MUNI() {
         setup_markup_from_input_csv(Markup.Type.MUNI, 
-                                    "Rating,                        1mo,         2,     3,     4,     5,  6-10,   11+\n"
+                                    "Rating,                        1,         2,     3,     4,     5,  6-10,   11+\n"
                                     + "AAA,                       0.20,0.25,0.40,0.75,1.25,   1.75,   3.00\n"
                                     + "AAplus,                   0.25,0.30,0.50,0.95,1.75,   2.25,   5.00\n"
                                     + "AA,                          0.30,0.35,0.60,1.25,2.25,   2.50,   5.00\n"
@@ -277,28 +278,28 @@ public class MarkupTest {
         static_assert_markup_is(101, 12, "NONE", 101 + 15.00);
     }
 
-    //@Test
+    @Test
 	public void test_matthew_v1_MUNI() {
         setup_markup_from_input_csv(Markup.Type.MUNI, 
                                     "Rating,    0-1mo,  2-3mo,  4-6mo,  7-9mo,  10-23mo,2yr,    3yr,    4yr,    5yr,    6-10yr, 11-20yr,21yr+\n"
                                     + "AAA,     0.002,	0.005,	0.008,	0.01,	0.020,	0.025,	0.035,	0.050,	0.075,	0.125,	0.250,	0.500\n"
-                                    + "AAplus,	0.005,	0.005,	0.008,	0.01,	0.025,	0.030,	0.050,	0.065,	0.095,	0.150,	0.300,	0.600\n"
-                                    + "AA,      0.005,	0.008,	0.01,	0.01,	0.030,	0.035,	0.060,	0.075,	0.115,	0.175,	0.350,	0.700\n"
+                                    + "AAplus, 0.005,	0.005,	0.008,	0.01,	0.025,	0.030,	0.050,	0.065,	0.095,	0.150,	0.300,	0.600\n"
+                                    + "AA,        0.005,	0.008,	0.01,	0.01,	0.030,	0.035,	0.060,	0.075,	0.115,	0.175,	0.350,	0.700\n"
                                     + "AAminus, 0.005,	0.008,	0.01,	0.015,	0.035,	0.040,	0.070,	0.090,	0.135,	0.200,	0.400,	0.800\n"
-                                    + "Aplus,	0.008,	0.008,	0.02,	0.025,	0.040,	0.045,	0.080,	0.105,	0.165,	0.225,	0.450,	0.900\n"
-                                    + "A,       0.008,	0.01,	0.02,	0.025,	0.045,	0.050,	0.090,	0.125,	1.950,	0.250,	0.500,	1.000\n"
+                                    + "Aplus,	   0.008,	0.008,	0.02,	0.025,	0.040,	0.045,	0.080,	0.105,	0.165,	0.225,	0.450,	0.900\n"
+                                    + "A,          0.008,	0.01,	0.02,	0.025,	0.045,	0.050,	0.090,	0.125,	1.950,	0.250,	0.500,	1.000\n"
                                     + "Aminus,	0.008,	0.01,	0.025,	0.025,	0.050,	0.055,	0.100,	0.150,	0.225,	0.275,	0.650,	1.300\n"
-                                    + "NONE,	0.01,	0.025,	0.05,	0.075,	0.100,	0.125,	0.175,	0.300,	0.500,	0.500,	1.000,	2.000\n");
+                                    + "NONE,	    0.01,	0.025,	0.05,	0.075,	0.100,	0.125,	0.175,	0.300,	0.500,	0.500,	1.000,	2.000\n");
         static_assert_markup_is(101, 1, "AAA", 101 + 0.020);
-        static_assert_markup_is(101, 1, "Aplus", 101 + 0.40);
+        static_assert_markup_is(101, 1, "Aplus", 101 + 0.040);
         static_assert_markup_is(101, 1, "AAplus", 101 + 0.025);
-        static_assert_markup_is(101, 1, "NONE", 101 + 2.00);
-        static_assert_markup_is(101, 7, "AAA", 101 + 1.75);
-        static_assert_markup_is(101, 8, "Aplus", 101 + 3.50);
+        static_assert_markup_is(101, 1, "NONE", 101 + 0.100);
+        static_assert_markup_is(101, 7, "AAA", 101 + 0.125);
+        static_assert_markup_is(101, 8, "Aplus", 101 + 0.225);
         static_assert_markup_is(101, 9, "AA",    101 + 0.175);
-        static_assert_markup_is(101, 10, "NONE", 101 + 7.50);
+        static_assert_markup_is(101, 10, "NONE", 101 + 0.50);
         static_assert_markup_is(101, 11, "AAminus", 101 + 0.4);
-        static_assert_markup_is(101, 12, "NONE", 101 + 15.00);
+        static_assert_markup_is(101, 12, "NONE", 101 + 1.00);
     }
     @Test
 	public void test_matthew_v0_AGENCY() {
@@ -353,11 +354,12 @@ public class MarkupTest {
 
     @Test
 	public void test_translate_time_units() {
-        assertEquals("1", Markup.Schedule.translate_time_units("1"));
-        assertEquals("2", Markup.Schedule.translate_time_units("2mo"));
-        assertEquals("1-2", Markup.Schedule.translate_time_units("1-2"));
-        assertEquals("1-2", Markup.Schedule.translate_time_units("1-2mo"));
-        assertEquals("12-23", Markup.Schedule.translate_time_units("1yr"));
-        assertEquals("12-35", Markup.Schedule.translate_time_units("1-2yr"));
+        Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
+        assertEquals("1", sch.translate_time_units("1"));
+        assertEquals("2", sch.translate_time_units("2mo"));
+        assertEquals("1-2", sch.translate_time_units("1-2"));
+        assertEquals("1-2", sch.translate_time_units("1-2mo"));
+        assertEquals("12-23", sch.translate_time_units("1yr"));
+        assertEquals("12-35", sch.translate_time_units("1-2yr"));
     }
 }
