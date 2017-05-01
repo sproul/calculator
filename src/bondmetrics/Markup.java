@@ -100,7 +100,6 @@ public class Markup {
                 int dataRowIndex = -1;
 				while (csvInput.ready()) {
 					String line = csvInput.readLine().replaceAll("[ \t]", "");
-                    System.out.println("Schedule: " + line);
 					if (line.matches(".*['\"].*")) {
 						throw new RuntimeException("no quotes allowed in csv input: " + line);
 					}
@@ -124,9 +123,6 @@ public class Markup {
 								}
 								col_greater_or_equal_to = Double.parseDouble(col_header);
 								this.dims.get(0).greater_than_or_equal_threshold = col_greater_or_equal_to;
-							}
-							else {
-								System.out.println("literal col_header: " + col_header);
 							}
 							if (!this.expand_ranges) {
 								data_col_duplication_coefficients.add(0);
@@ -209,11 +205,24 @@ public class Markup {
          * 
 		 */
         public String translate_time_units(String header) {
-        	if (header.matches("\\d+mo\\+?$") || header.matches("\\d+-\\d+mo\\+?$")) {
+            if (header.matches(".*\\d+mo-\\d+yr$")) {
+                int years = Integer.parseInt(header.replaceAll(".*-", "").replaceAll("yr$", ""));
+                String years_str = "" + years + "yr";
+                header = header.replaceAll(years_str, "" + ((12 * years) + 11));
+                header = header.replaceAll("mo", "");
+                return header;
+            }
+            if (header.matches(".*\\d+yr-\\d+mo$")) {
+                int years = Integer.parseInt(header.replaceAll("yr.*", ""));
+                String years_str = "" + years + "yr";
+                header = header.replaceAll(years_str, "" + ((12 * years)));
+                header = header.replaceAll("mo", "");
+                return header;
+            }
+            if (header.matches(".*\\d+mo\\+?$") || header.matches("\\d+mo-.*")) {
                 this.time_month_mode = true;
-        		header = header.replaceAll("mo$", "");
-        		header = header.replaceAll("mo\\+$", "+");
-        		return header;
+        		header = header.replaceAll("mo", "");
+                return header;
         	}
         	if (header.matches("\\d+yr\\+?$") || header.matches("\\d+-\\d+yr\\+?$")) {
                 this.time_month_mode = true;
@@ -262,13 +271,11 @@ public class Markup {
         }
 		private int resolve_duplication_coefficient(String header) {
 			if (!header.matches("^\\d+-\\d+$")) {
-                System.out.println("resolve_duplication_coefficient(" + header + "): not a range");
 				return 0;		// normal case, this is not a range
 			}
 			int range_start = Integer.parseInt(header.replaceAll("-.*", ""));
 			int range_end  = Integer.parseInt(header.replaceAll(".*-", ""));
 			int expand_to_this_number_of_columns = range_end - range_start;
-            System.out.println("resolve_duplication_coefficient(" + header + "): " + range_start + " + " + expand_to_this_number_of_columns);
 			return expand_to_this_number_of_columns;
 		}
 		
@@ -305,7 +312,6 @@ public class Markup {
 		public void set_markup(String[] dimension_keys, Double val) {
 			String key = this.make_key(dimension_keys);
 			this.markups.put(key, val);
-            System.out.println("set_markup(" + key + ") = " + val);
 		}
     
         public double get_markup(String[] dimension_keys, double price) {
@@ -314,7 +320,6 @@ public class Markup {
             if (val == null) {
             	throw new RuntimeException("no markup set for key " + key);
             }
-            System.out.println("get_markup(" + key + ") => " + val);
 			return val + price;
 		}
 

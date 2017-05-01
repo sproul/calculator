@@ -281,7 +281,7 @@ public class MarkupTest {
     @Test
 	public void test_matthew_v1_MUNI() {
         setup_markup_from_input_csv(Markup.Type.MUNI, 
-                                    "Rating,    0-1mo,  2-3mo,  4-6mo,  7-9mo,  10-23mo,2yr,    3yr,    4yr,    5yr,    6-10yr, 11-20yr,21yr+\n"
+                                    "Rating,    0mo-1mo,  2-3mo,  4-6mo,  7-9mo,  10-23mo,2yr,    3yr,    4yr,    5yr,    6-10yr, 11-20yr,21yr+\n"
                                     + "AAA,     0.002,	0.005,	0.008,	0.01,	0.020,	0.025,	0.035,	0.050,	0.075,	0.125,	0.250,	0.500\n"
                                     + "AAplus, 0.005,	0.005,	0.008,	0.01,	0.025,	0.030,	0.050,	0.065,	0.095,	0.150,	0.300,	0.600\n"
                                     + "AA,        0.005,	0.008,	0.01,	0.01,	0.030,	0.035,	0.060,	0.075,	0.115,	0.175,	0.350,	0.700\n"
@@ -359,7 +359,19 @@ public class MarkupTest {
         assertEquals("2", sch.translate_time_units("2mo"));
         assertEquals("1-2", sch.translate_time_units("1-2"));
         assertEquals("1-2", sch.translate_time_units("1-2mo"));
+        assertEquals("2-3", sch.translate_time_units("2mo-3mo"));
         assertEquals("12-23", sch.translate_time_units("1yr"));
-        assertEquals("12-35", sch.translate_time_units("1-2yr"));
+    }
+
+    @Test
+    public void test_translate_time_units2() {
+        Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
+        assertEquals("12-15", sch.translate_time_units("1yr-15mo"));
+    }
+
+    @Test
+	public void test_translate_time_units3() {
+        Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
+        assertEquals("7-23", sch.translate_time_units("7mo-1yr"));
     }
 }
