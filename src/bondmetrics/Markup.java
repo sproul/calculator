@@ -25,7 +25,9 @@ public class Markup {
             BBBplus_or_below,
             NONE
     }
-
+    /*
+     * deprecated -- use Util.Type instead
+     */
 	public enum Type {
         MUNI,
         AGENCY,
