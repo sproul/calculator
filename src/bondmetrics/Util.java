@@ -5,16 +5,65 @@ import java.util.Date;
 public class Util {
 	private static Double ytm_increment_starting_value = 0.0000001;
  
+	/* based on sample data interest_payment_frequency:
+     *
+	 * grep interest_payment_frequency $DOWNLOADS/gsm_init_portfolio_c300167_20170417_114931.231.1.csv.xml | sort | uniq
+     * <interest_payment_frequency>1</interest_payment_frequency>
+     * <interest_payment_frequency>2</interest_payment_frequency>
+     * <interest_payment_frequency>3</interest_payment_frequency>
+     * <interest_payment_frequency>5</interest_payment_frequency>
+     * <original_interest_payment_frequency>1</original_interest_payment_frequency>
+     * <original_interest_payment_frequency>3</original_interest_payment_frequency>
+     *
+	 */
 	public enum Bond_frequency_type {
-        Annual,
-        SemiAnnual,
-        Quarterly,
-        Monthly
+        Unknown(0),
+        SemiAnnual(1),
+        Monthly(2),
+        Annual(3),
+        Weekly(4),
+        Quarterly(5),
+        Every_2_years(6),
+        Every_3_years(7),
+        Every_4_years(8),
+        Every_5_years(9),
+        Every_7_years(10),
+        Every_8_years(11),
+        Biweekly(12),
+        Changeable(13),
+        Daily(14),
+        Term_mode(15),
+        Interest_at_maturity(16),
+        Bimonthly(17),
+        Every_13_weeks(18),
+        Irregular(19),
+        Every_28_days(20),
+        Every_35_days(21),
+        Every_26_weeks(22),
+        Not_Applicable(23),
+        Tied_to_prime(24),
+        One_time(25),
+        Every_10_years(26),
+        Frequency_to_be_determined(27),
+        Mandatory_put(28),
+        Every_52_weeks(29),
+        When_interest_adjusts_commercial_paper(30),
+        Zero_coupon(31),
+        Certain_years_only(32),
+        Under_certain_circumstances(33),
+        Every_15_years(34),
+        Custom(35),
+        Single_Interest_Payment(36);
+                                   
+        public final int value;
+        Bond_frequency_type(int value) {
+            this.value = value;
+        }
     }
 
     /* 
      * based on sample data interest bases:
-     * grep interest_basis  $DOWNLOADS/gsm_init_portfolio_c300167_20170417_114931.231.1.csv.xml | sort | uniq
+     * qr.ice.grep.enums
      * 
      * <interest_basis type="30/360 (ICMA)">12</interest_basis>
      * Simplify accrued interest calculations by assuming all months have 30 days. Derive the daily accrued interest rate by dividing the annual rate by 360.
@@ -26,14 +75,40 @@ public class Util {
      * For accrued interest calculations, use the actual number of days elapsed, and derive the daily accrued interest rate by dividing the annual rate by the number of days in the year.
      */
 	public enum Interest_basis {
-        By_30_360_ICMA,
-        By_Actual_360,
-        By_Actual_365,
-        By_Actual_Actual
+        By_Actual_Actual(1),
+        By_Actual_360(2),
+        By_30_360(3),
+        By_Actual_365(5),
+        By_Actual_365_366_Leap_Year_ISDA(7),
+        By_30_360_Compounded_Interest(8),
+        By_30_365(9),
+        By_Future_Data_Not_Available(10),
+        By_Historical_Data_Not_Available(11),
+        By_30_360_ICMA(12),
+        By_Actual_365_366_Leap_Year(13),
+        By_Actual_364(14),
+        By_Bus_252(15),
+        By_365_365(16),
+        By_Actual_Actual_ICMA(17),
+        By_30_360_US(19),
+        By_30_360_US_NASD(20),
+        By_30_360_BMA(21),
+        By_30_360_ISDA(22),
+        By_30_360_IT(23),
+        By_30_360_SIA(24),
+        By_30E_360(25),
+        By_30E_360_ISDA(26),
+        By_30E_360b(27),		// not sure of the purpose of this value in the ICE data
+        By_NL_365_No_Leap_Year(28);
+
+        public final int value;
+        Interest_basis(int value) {
+            this.value = value;
+        }
     }
 
 	@SuppressWarnings("deprecation")
-	static public Date date(int year, int month, int day) {
+	static Date date(int year, int month, int day) {
 		return new Date(year - 1900, month -1, day);
 	}
 
@@ -42,7 +117,8 @@ public class Util {
      * 
      */
 
-	public static int number_of_payment_periods_between(Util.Bond_frequency_type frequency_type, Date d1, Date d2) {
+	static int number_of_payment_periods_between(Util.Bond_frequency_type frequency_type, Date d1, Date d2) {
+        frequency_type = remap_frequency_type(frequency_type);
 		switch (frequency_type) {
 		case Annual:
 			return number_of_years_between(d1, d2);
@@ -57,6 +133,7 @@ public class Util {
 		}
     }
 	private static double fractional_number_of_payment_periods_between(Util.Bond_frequency_type frequency_type, Date d1, Date d2) {
+        frequency_type = remap_frequency_type(frequency_type);
 		long days = number_of_days_between(d1, d2);
 		switch (frequency_type) {
 		case Annual:
@@ -117,7 +194,7 @@ public class Util {
 		return n;
 	}
 
-	public static double yield_to_maturity_approximate(int payments_per_year, double years_to_maturity, double coupon_payment, int par, double price) {
+	static double yield_to_maturity_approximate(int payments_per_year, double years_to_maturity, double coupon_payment, int par, double price) {
 		double c = coupon_payment;
 		double n = years_to_maturity;
 		int f = par;
@@ -142,6 +219,7 @@ public class Util {
 	}
 
 	public static double yield_to_maturity(Bond_frequency_type frequency_type, double actual_price, double coupon_rate, int par, Date settlement, Date maturity) {
+        frequency_type = remap_frequency_type(frequency_type);
 		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity);
 		double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, settlement, maturity);
 		int payments_per_year =  number_of_payment_periods_per_year(frequency_type);
@@ -204,7 +282,8 @@ public class Util {
 	}
 	
 
-	public static double yield_to_maturity_including_accrued_interest(Interest_basis interest_basis, Bond_frequency_type frequency_type, double clean_price, double coupon_rate, int par, Date settlement, Date maturity) {
+	static double yield_to_maturity_including_accrued_interest(Interest_basis interest_basis, Bond_frequency_type frequency_type, double clean_price, double coupon_rate, int par, Date settlement, Date maturity) {
+        frequency_type = remap_frequency_type(frequency_type);
 		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity);
 		double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, settlement, maturity);
 		int payments_per_year =  number_of_payment_periods_per_year(frequency_type);
@@ -270,6 +349,7 @@ public class Util {
 	}
 	
 	private static int number_of_payment_periods_per_year(Bond_frequency_type frequency_type) {
+        frequency_type = remap_frequency_type(frequency_type);
 		switch (frequency_type) {
 		case Annual:
 			return 1;
@@ -288,7 +368,7 @@ public class Util {
      * Given the interest_basis, calculate the number of days between the dates for accrued interest calculating purposes.
      */
     @SuppressWarnings("deprecation")
-	public static int accrued_interest_days(Interest_basis interest_basis, Date date1, Date date2) {
+	static int accrued_interest_days(Interest_basis interest_basis, Date date1, Date date2) {
 		if (interest_basis == Interest_basis.By_30_360_ICMA) {
 			int y1 = date1.getYear();
 			int y2 = date2.getYear();
@@ -310,7 +390,8 @@ public class Util {
     /*
      * Given the interest_basis and the coupon rate, calculate the daily interest rate to be used for calculating accrued interest.
      */
-	public static double accrued_interest_rate_per_day(Interest_basis interest_basis, double coupon_rate) {
+	static double accrued_interest_rate_per_day(Interest_basis interest_basis, double coupon_rate) {
+		interest_basis = remap_interest_basis(interest_basis);
 		switch(interest_basis) {
         case By_30_360_ICMA:
         case By_Actual_360:
@@ -319,23 +400,58 @@ public class Util {
         case By_Actual_Actual:
             return coupon_rate / 365;
         default:
-            throw new RuntimeException("unrecognizd interest_basis=" + interest_basis);
+            throw new RuntimeException("unrecognized interest_basis=" + interest_basis);
         }
 	}
 
-    /*
+    private static Interest_basis remap_interest_basis(Interest_basis interest_basis) {
+        switch (interest_basis) {
+        case By_Actual_Actual:
+        case By_Actual_360:
+        case By_Actual_365:
+        case By_30_360_ICMA:
+            return interest_basis;
+        case By_30E_360:
+        case By_30E_360_ISDA:
+        case By_30E_360b:
+        case By_30_360:
+        case By_30_360_BMA:
+        case By_30_360_Compounded_Interest:
+        case By_30_360_ISDA:
+        case By_30_360_IT:
+        case By_30_360_SIA:
+        case By_30_360_US:
+        case By_30_360_US_NASD:
+            return Interest_basis.By_30_360_ICMA;
+        case By_30_365:
+        case By_365_365:
+        case By_Actual_364:
+        case By_Actual_365_366_Leap_Year:
+        case By_Actual_365_366_Leap_Year_ISDA:
+        case By_Actual_Actual_ICMA:
+        case By_Bus_252:
+        case By_Future_Data_Not_Available:
+        case By_Historical_Data_Not_Available:
+        case By_NL_365_No_Leap_Year:
+        default:
+            return Interest_basis.By_Actual_Actual;
+        }
+	}
+
+	/*
      * Given the interest_basis, bond coupon rate, settlement and maturity dates for a bond, calculate the accrued interest that will build up
      * between 
      * 					1.) the last coupon payment date preceding the settlement date and
      * 					2.) the settlement date.
      */
 	public static double accrued_interest_at_settlement(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, Date settlement, Date maturity) {
+        frequency_type = remap_frequency_type(frequency_type);
 		Date last_coupon_payment_date = find_coupon_payment_date_preceding_or_coinciding_with_settlement(frequency_type, settlement, maturity);
 		return accrued_interest_from_time_span(interest_basis, coupon_rate, last_coupon_payment_date, settlement);
 	}
 
 	@SuppressWarnings("deprecation")
-	public static int count_months_between(Date d1, Date d2) {
+	static int count_months_between(Date d1, Date d2) {
         int n = d2.getMonth() - d1.getMonth();
         if (d1.getDate() > d2.getDate()) {
             n--;
@@ -344,7 +460,8 @@ public class Util {
     }
     
     @SuppressWarnings("deprecation")
-	public static Date find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type frequency_type, Date settlement, Date maturity) {
+	static Date find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type frequency_type, Date settlement, Date maturity) {
+        frequency_type = remap_frequency_type(frequency_type);
     	int sy = settlement.getYear();
 		int sm = settlement.getMonth();
 		int mm = maturity.getMonth();
@@ -354,6 +471,8 @@ public class Util {
         int cy = sy;
         int cm = mm;
         int cd = md;
+        
+        frequency_type = remap_frequency_type(frequency_type);
         
     	switch (frequency_type) {
         case Annual:
@@ -413,6 +532,55 @@ public class Util {
         return new Date(cy, cm, cd);
     }
 
+	private static Bond_frequency_type remap_frequency_type(Bond_frequency_type frequency_type) {
+        switch (frequency_type) {
+        case SemiAnnual:
+        case Monthly:
+        case Annual:
+        case Quarterly:
+            return frequency_type;
+        case Daily:
+        case Biweekly:
+        case Weekly:
+        case Bimonthly:
+            return Bond_frequency_type.Monthly;
+        case Every_2_years:
+        case Every_3_years:
+        case Every_4_years:
+        case Every_5_years:
+        case Every_7_years:
+        case Every_8_years:
+            return Bond_frequency_type.Annual;
+        case Interest_at_maturity:
+        case Every_52_weeks:
+            return Bond_frequency_type.Annual;
+        case Every_13_weeks:
+            return Bond_frequency_type.Quarterly;
+        case Irregular:
+        case Every_28_days:
+        case Every_35_days:
+            return Bond_frequency_type.Monthly;
+        case Every_26_weeks:
+            return Bond_frequency_type.SemiAnnual;
+        case Not_Applicable:
+        case Tied_to_prime:
+        case One_time:
+        case Every_10_years:
+        case Frequency_to_be_determined:
+        case Mandatory_put:
+        case When_interest_adjusts_commercial_paper:
+        case Zero_coupon:
+        case Certain_years_only:
+        case Under_certain_circumstances:
+        case Every_15_years:
+        case Custom:
+        case Single_Interest_Payment:
+        default:
+            System.out.println("Util.remap_frequency_type(" + frequency_type + "): unsure, defaulting to SemiAnnual");
+            return Bond_frequency_type.SemiAnnual;
+        }
+	}
+
 	private static boolean month_precedes_month(int m1, int m2) {
 		return m1 == m2-1 || (m1==11 && m2==0);
 	}
@@ -425,5 +593,16 @@ public class Util {
         double interest_rate_per_day = accrued_interest_rate_per_day(interest_basis, coupon_rate);
         int         interest_days               = accrued_interest_days(             interest_basis, d1, d2);
 		return interest_days * interest_rate_per_day;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static void main(String[] args) {
+		double coupon_rate = 3.75;
+		Interest_basis interest_basis = Interest_basis.By_30_360_ICMA;
+		Bond_frequency_type frequency_type = Bond_frequency_type.Quarterly;
+		Date settlement = new Date(117, 5, 30);
+		Date maturity= new Date(120, 5, 30);
+		double accrued_interest = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, settlement, maturity);
+		System.out.println("accrued interest is " + accrued_interest);
 	}
 }

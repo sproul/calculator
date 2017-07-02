@@ -43,7 +43,7 @@ public class Markup {
 			boolean is_wildcard;
 			Double greater_than_or_equal_threshold;
 
-			public String make_key_component(String dimension_value) {
+			String make_key_component(String dimension_value) {
 				if (this.is_wildcard) {
 					return Markup.WILD_CARD;
 				}
@@ -91,7 +91,7 @@ public class Markup {
          */
         private boolean time_month_mode;
 		
-		public Schedule(InputStream csvInputStream) {
+		Schedule(InputStream csvInputStream) {
 			Reader reader = new InputStreamReader(csvInputStream);
 			BufferedReader csvInput = new BufferedReader(reader);
 			this.time_month_mode = false;
@@ -206,7 +206,7 @@ public class Markup {
          * 1yr-2yr		12-35
          * 
 		 */
-        public String translate_time_units(String header) {
+        String translate_time_units(String header) {
             if (header.matches(".*\\d+mo-\\d+yr$")) {
                 int years = Integer.parseInt(header.replaceAll(".*-", "").replaceAll("yr$", ""));
                 String years_str = "" + years + "yr";
@@ -288,10 +288,10 @@ public class Markup {
 			}
 			return a;
 		}
-		public void add_dim(Schedule_dimension dim) {
+		void add_dim(Schedule_dimension dim) {
 			this.dims.add(dim);
 		}
-		public String make_key(String[] dimension_keys) {
+		String make_key(String[] dimension_keys) {
 			if (dimension_keys == null) {
 				throw new RuntimeException("null dimension keys");
 			}
@@ -311,12 +311,12 @@ public class Markup {
 			return sb.toString();
 		}
 
-		public void set_markup(String[] dimension_keys, Double val) {
+		void set_markup(String[] dimension_keys, Double val) {
 			String key = this.make_key(dimension_keys);
 			this.markups.put(key, val);
 		}
     
-        public double get_markup(String[] dimension_keys, double price) {
+        double get_markup(String[] dimension_keys, double price) {
             String key = this.make_key(dimension_keys);
             Double val = this.markups.get(key);
             if (val == null) {
@@ -379,14 +379,14 @@ public class Markup {
     /**
      * Given a price, bond type, and a date of maturity, construct a Markup object.
      */
-	public Markup(double price, Type type, Date maturity) {
+	Markup(double price, Type type, Date maturity) {
 		this(price, type, maturity, Rating.NONE);
 	}
 
     /**
      * Given a price, bond type, date of maturity, and a rating, construct a Markup object.
      */
-	public Markup(double price, Type type, Date maturity, Rating rating) {
+	Markup(double price, Type type, Date maturity, Rating rating) {
         this.price = price;
         this.type = type;
         this.maturity = maturity;
@@ -396,7 +396,7 @@ public class Markup {
     /**
      * Given a price, bond type, date of maturity, and a rating, construct a Markup object.
      */
-	public Markup(double price, Type type, Date maturity, String rating_string) {
+	Markup(double price, Type type, Date maturity, String rating_string) {
     	this(price, type, maturity, (rating_string == null ? null : Rating.valueOf(rating_string)));
     }
     
@@ -445,7 +445,7 @@ public class Markup {
         	dimension_keys = z;
         }
         else {
-        	throw new RuntimeException("lsdfjk");
+        	throw new RuntimeException("bad index");
         }
         return schedule.get_markup(dimension_keys, this.price);
     }
@@ -458,10 +458,7 @@ public class Markup {
 	}
 	
 	protected long calculate_years_to_maturity() {
-		long t_now = new Date().getTime();
-        long t_maturity = this.maturity.getTime();
-        long years_to_maturity = (t_maturity - t_now) / (24 * 365 * 60 * 60 * 1000L);
-		return years_to_maturity + 1;	// rounding up, i.e., if we are three days to maturity, we consider that to be 1 year.
+		return calculate_months_to_maturity() / 12;
 	}
 	
     /**

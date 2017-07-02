@@ -12,7 +12,6 @@ import bondmetrics.Markup.Type;
 public class MarkupTest {
 
 	private static final double MARGIN_FOR_ERROR = 0.0001;
-	private static final int FUDGE_FACTOR_TO_AVOID_LEAP_YEAR_AND_OR_TZ_PROBLEMS = 2;
 	private Type type;
 
 	protected void setup_markup_from_input_csv(Markup.Type type, String csv)
@@ -92,9 +91,9 @@ public class MarkupTest {
     }
     
     private Date make_date_n_years_from_now(int n) {
-    	long t_now = System.currentTimeMillis();
-    	long t_n_years_from_now = t_now + ((365L - FUDGE_FACTOR_TO_AVOID_LEAP_YEAR_AND_OR_TZ_PROBLEMS) * 24 * 60 * 60 * 1000 * n);
-    	Date d = new Date(t_n_years_from_now);
+    	Date now = new Date();
+    	@SuppressWarnings("deprecation")
+		Date d = new Date(now.getYear() + n, now.getMonth(), now.getDate());
 		return d;
 	}
     
@@ -188,13 +187,13 @@ public class MarkupTest {
                                     "irrelevant,1,2-4\n"
                                     + "AAA,1.1,1.2\n"
                                     + "A,2.1,2.2\n");
+        assert_markup_is(101, 4, "AAA", 101 + 1.2);
         assert_markup_is(101, 1, "AAA", 101 + 1.1);
         assert_markup_is(101, 1, "A", 101 + 2.1);
         assert_markup_is(101, 2, "AAA", 101 + 1.2);
         assert_markup_is(101, 2, "A", 101 + 2.2);
         assert_markup_is(101, 3, "AAA", 101 + 1.2);
         assert_markup_is(101, 3, "A", 101 + 2.2);
-        assert_markup_is(101, 4, "AAA", 101 + 1.2);
         assert_markup_is(101, 4, "A", 101 + 2.2);
     }
 
@@ -346,10 +345,15 @@ public class MarkupTest {
     @Test
     public void test_date_rounding() {
     	long t_now = new Date().getTime();
-    	Date threeDaysFromNow = new Date(t_now + (3 * 24 * 60 * 60 * 1000L));
-		Markup m = new Markup(101, Markup.Type.DTC_PRIMARY, threeDaysFromNow);
+    	Date days3FromNow = new Date(t_now + (3 * 24 * 60 * 60 * 1000L));
+		Markup m = new Markup(101, Markup.Type.DTC_PRIMARY, days3FromNow);
         long years_to_maturity = m.calculate_years_to_maturity();
-        assertEquals(1, years_to_maturity);
+        assertEquals(0, years_to_maturity);
+
+        Date years3FromNow = new Date(t_now + (3 * 24 * 60 * 60 * 1000L * 366));
+		m = new Markup(101, Markup.Type.DTC_PRIMARY, years3FromNow);
+        years_to_maturity = m.calculate_years_to_maturity();
+        assertEquals(3, years_to_maturity);
     }
 
     @Test

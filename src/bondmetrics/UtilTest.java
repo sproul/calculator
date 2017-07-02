@@ -215,6 +215,47 @@ public class UtilTest
     }
     
 	@Test
+	public void test_misc_ice_freq_types() {
+        Util.yield_to_maturity(Util.Bond_frequency_type.Unknown, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Weekly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_2_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_4_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_5_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_7_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_8_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Biweekly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Changeable, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Changeable, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Term_mode, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Interest_at_maturity, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Bimonthly, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_13_weeks, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Irregular, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_28_days, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_35_days, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_26_weeks, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Not_Applicable, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Tied_to_prime, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.One_time, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_10_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Frequency_to_be_determined, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Mandatory_put, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_52_weeks, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.When_interest_adjusts_commercial_paper, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Zero_coupon, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Certain_years_only, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Under_certain_circumstances, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Every_15_years, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Custom, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        Util.yield_to_maturity(Util.Bond_frequency_type.Single_Interest_Payment, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+    }
+    
+	@Test
 	public void test_annual() {
         assertEquals(0.05,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
 		assertEquals(0.05,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2029, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
@@ -281,6 +322,46 @@ public class UtilTest
 	//@Test
 	public void test_annual_partial_at_par() {
 		assertEquals(0.0684,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+	}
+	@Test
+	public void test_number_of_payment_periods_between__misc_ice_freq_types() {
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Unknown, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.SemiAnnual, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Monthly, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Annual, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Weekly, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Quarterly, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_2_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_3_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_4_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_5_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_7_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_8_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Biweekly, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Changeable, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Daily, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Term_mode, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Interest_at_maturity, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Bimonthly, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_13_weeks, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Irregular, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_28_days, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_35_days, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_26_weeks, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Not_Applicable, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Tied_to_prime, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.One_time, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_10_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Frequency_to_be_determined, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Mandatory_put, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_52_weeks, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.When_interest_adjusts_commercial_paper, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Zero_coupon, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Certain_years_only, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Under_certain_circumstances, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Every_15_years, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Custom, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
+		Util.number_of_payment_periods_between(Util.Bond_frequency_type.Single_Interest_Payment, Util.date(2017, 3, 20), Util.date(2018, 3, 20));
 	}
 	@Test
 	public void test_number_of_payment_periods_between__Annual() {
@@ -381,12 +462,68 @@ public class UtilTest
 		assertEquals(28, Util.accrued_interest_days(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
 		assertEquals(28, Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
     }
+    @Test
+	public void test_accrued_interest_days__misc_ice_types() {
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365_366_Leap_Year_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_Compounded_Interest,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Future_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Historical_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365_366_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_364,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Bus_252,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_365_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_US,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_US_NASD,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_BMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_IT,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30_360_SIA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30E_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30E_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_30E_360b,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.accrued_interest_days(Util.Interest_basis.By_NL_365_No_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+    }
 	@Test
 	public void test_accrued_interest_by_day() {
 		assertEquals(0.0111111111111111112, Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_ICMA, 4.0), MARGIN_FOR_ERROR);
 		assertEquals(0.0111111111111111112, Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_360,  4.0), MARGIN_FOR_ERROR);
 		assertEquals(0.010958904, Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_365,  4.0), MARGIN_FOR_ERROR);
 		assertEquals(0.010958904, Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_Actual,  4.0), MARGIN_FOR_ERROR);
+    }
+	@Test
+	public void test_accrued_interest_by_day__misc_ice_types() {
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_Actual, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_360, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_365, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_365_366_Leap_Year_ISDA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_Compounded_Interest, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_365, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Future_Data_Not_Available, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Historical_Data_Not_Available, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_ICMA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_365_366_Leap_Year, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_364, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Bus_252, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_365_365, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_Actual_Actual_ICMA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_US, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_US_NASD, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_BMA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_ISDA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_IT, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30_360_SIA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30E_360, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30E_360_ISDA, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_30E_360b, 4.0);
+		Util.accrued_interest_rate_per_day(Util.Interest_basis.By_NL_365_No_Leap_Year, 4.0);
     }
 	@Test
 	public void test_accrued_interest() {
@@ -441,7 +578,7 @@ public class UtilTest
 
 		
 		
-		assertEquals(Util.date(2017, 4, 22), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Quarterly, Util.date(2017, 7, 21), Util.date(2017, 7, 22)));
+		assertEquals(Util.date(2017, 4, 22), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Quarterly, Util.date(2017, 7, 21), Util.date(2017, 7, 22))); 
 		assertEquals(Util.date(2017, 4, 1), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Quarterly, Util.date(2017, 5, 2), Util.date(2017, 7, 1)));
 		assertEquals(Util.date(2017, 4, 2), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Quarterly, Util.date(2017, 6, 3), Util.date(2017, 7, 2)));
 		assertEquals(Util.date(2017, 4, 3), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Quarterly, Util.date(2017, 6, 30), Util.date(2017, 7, 3)));
@@ -453,5 +590,39 @@ public class UtilTest
 		assertEquals(Util.date(2017, 6, 16), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Monthly, Util.date(2017, 7, 6), Util.date(2017, 7, 16)));
 		assertEquals(Util.date(2017, 6, 17), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Monthly, Util.date(2017, 6, 18), Util.date(2017, 7, 17)));
 		assertEquals(Util.date(2016, 12, 18), Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Monthly, Util.date(2017, 1, 17), Util.date(2017, 7, 18)));
+	}
+	@Test
+	public void test_ice_enum_vals() {
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Weekly, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_2_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_3_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_3_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_5_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_5_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_8_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Biweekly, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Biweekly, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Daily, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Term_mode, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Interest_at_maturity, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Bimonthly, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Bimonthly, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Irregular, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_28_days, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_28_days, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_26_weeks, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_26_weeks, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Tied_to_prime, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.One_time, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_10_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.One_time, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_52_weeks, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.When_interest_adjusts_commercial_paper, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Zero_coupon, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Certain_years_only, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Under_certain_circumstances, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Every_15_years, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Custom, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
+		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Single_Interest_Payment, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
 	}
 }
