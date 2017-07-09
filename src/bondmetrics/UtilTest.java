@@ -198,20 +198,20 @@ public class UtilTest
         return bd.doubleValue();
     }
 
-	public static void main(String[] args) {
-		String fn;
-		if (args.length > 0) {
-			fn = args[0];
-		}
-		else {
-			fn = "../yield_tool/spectrum.out";
-		}
-		test_spectrum_output(fn);
-	}
-
 	@Test
 	public void test_approx() {
 		assertEquals(0.084615, Util.yield_to_maturity_approximate(1, 4, 0.07 * 100, 100,  95), UtilTest.MARGIN_FOR_ERROR);
+    }
+    
+    @Test
+	public void test_misc_ice_freq_types__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_misc_ice_freq_types();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
     }
     
 	@Test
@@ -255,21 +255,65 @@ public class UtilTest
         Util.yield_to_maturity(Util.Bond_frequency_type.Single_Interest_Payment, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
     }
     
+    @Test
+	public void test_annual__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_annual();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_annual() {
         assertEquals(0.05,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
 		assertEquals(0.05,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.05, 100, Util.date(2016, 3, 21), Util.date(2029, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
     
+    @Test
+	public void test_annual_multiyear__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_annual_multiyear();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_annual_multiyear() {
-		assertEquals(0.0853,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 95,   0.07,   100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
-		assertEquals(0.4373,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 72,   0.2,   100, Util.date(2016, 3, 21), Util.date(2018, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.085007 : 0.0853,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 95,   0.07,  100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.420547 : 0.4373,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 72,   0.2,   100, Util.date(2016, 3, 21), Util.date(2018, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+    }
+    
+    @Test
+	public void test_annual_multiyear_par1000__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_annual_multiyear_par1000();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
     }
     
 	@Test
 	public void test_annual_multiyear_par1000() {
-		assertEquals(0.0853,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 950, 0.07, 1000, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? -0.466982 : 0.0853,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 950, 0.07, 1000, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+    }
+    
+    @Test
+	public void test_semiannual_simple__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_semiannual_simple();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
     }
     
 	@Test
@@ -277,46 +321,134 @@ public class UtilTest
 		assertEquals(0.2,  Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 100, 0.2, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
 	
+    @Test
+	public void test_semiannual_below_par__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_semiannual_below_par();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_semiannual_below_par() {
-		assertEquals(0.4108,  Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 84, 0.2, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.4108302 : 0.4108,  Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 84, 0.2, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
+    @Test
+	public void test_quarterly_simple__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_quarterly_simple();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_quarterly_simple() {
 		assertEquals(0.2,  Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, 100, 0.2, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
 
+    @Test
+	public void test_semiannual__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_semiannual();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_semiannual() {
 		assertEquals(0.085,  Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
     
+    @Test
+	public void test_quarterly__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_quarterly();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_quarterly() {
-		assertEquals(0.0849,  Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.085007 : 0.0849,  Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+    }
+    
+    @Test
+	public void test_monthly__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_monthly();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
     }
     
 	@Test
 	public void test_monthly() {
-		assertEquals(0.0848,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.085007 : 0.0848,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
 
+    @Test
+	public void test_monthly_partial__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_monthly_partial();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_monthly_partial() {
-		assertEquals(0.1493,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.1521357 : 0.1493,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 95, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
     
 
+    @Test
+	public void test_monthly_partial_at_par__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_monthly_partial_at_par();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
+    }
+    
 	@Test
 	public void test_monthly_partial_at_par() {
-		assertEquals(0.07,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.070207 : 0.07,  Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+    }
+    
+    @Test
+	public void test_annual12_partial__bondOAS() {
+        Util.bondOAS_mode = true;
+        try {
+            test_annual12_partial();
+        }
+        finally {
+            Util.bondOAS_mode = false;
+        }
     }
     
 	// disabled this test -- my method does not account for accrued interest because it assumes the buyer will pay exactly the interest that was earned before settlement, and
 	// therefore there will be no impact on the price
     //@Test
 	public void test_annual12_partial() {
-		assertEquals(0.1154,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.12, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+		assertEquals(Util.bondOAS_mode ? 0.12061275 : 0.1154,  Util.yield_to_maturity(Util.Bond_frequency_type.Annual, 100, 0.12, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
 	}
 
 	//@Test
@@ -625,4 +757,46 @@ public class UtilTest
 		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Custom, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
 		Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(Bond_frequency_type.Single_Interest_Payment, Util.date(2017, 7, 6), Util.date(2017, 7, 16));
 	}
+    @Test
+	public void test_OASdate_conversion() {
+    	BondOASwrapper.init();
+        Date jdate = Util.date(2017, 7, 16);
+        com.kalotay.akalib.Date oasDate = new com.kalotay.akalib.Date(2017, 7, 16);
+        com.kalotay.akalib.Date oasDate2 = BondOASwrapper.date_to_OASdate(jdate);
+        assertEquals(oasDate.YearOf(), oasDate2.YearOf());
+        assertEquals(oasDate.MonthOf(), oasDate2.MonthOf());
+        assertEquals(oasDate.DayOf(), oasDate2.DayOf());
+    }
+	public static void main(String[] args) {
+        double start;
+        double end;
+        
+        int op_cnt = 1000;
+        
+        start = System.currentTimeMillis();
+        double coupon_rate = 0.2;
+        Date settlement = Util.date(2016, 3, 21);
+		Date maturity = Util.date(2017, 3, 21);
+		for (int j = 0; j < op_cnt; j++) {
+            BondOASwrapper.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, coupon_rate, 100, settlement, maturity);
+            coupon_rate += j * 0.00001;
+        }
+        end = System.currentTimeMillis();
+        double t = end - start;
+        if (t==0) {
+            t = 1;
+        }
+        System.out.println("main: BondOASwrapper.yield_to_maturity " + (op_cnt / t));
+        
+        start = System.currentTimeMillis();
+        for (int j = 0; j < op_cnt; j++) {
+            Util.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, 0.2, 100, settlement, maturity);
+        }
+        end = System.currentTimeMillis();
+        t = end - start;
+        if (t==0) {
+            t = 1;
+        }
+        System.out.println("main: Util.yield_to_maturity " + (op_cnt / t));
+    }
 }

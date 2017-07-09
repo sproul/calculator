@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class Util {
 	private static Double ytm_increment_starting_value = 0.0000001;
+	public static boolean bondOAS_mode = false;
  
 	/* based on sample data interest_payment_frequency:
      *
@@ -219,6 +220,9 @@ public class Util {
 	}
 
 	public static double yield_to_maturity(Bond_frequency_type frequency_type, double actual_price, double coupon_rate, int par, Date settlement, Date maturity) {
+        if (Util.bondOAS_mode) {
+            return BondOASwrapper.yield_to_maturity(frequency_type, actual_price, coupon_rate, par, settlement, maturity);
+        }
         frequency_type = remap_frequency_type(frequency_type);
 		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity);
 		double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, settlement, maturity);
@@ -605,4 +609,23 @@ public class Util {
 		double accrued_interest = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, settlement, maturity);
 		System.out.println("accrued interest is " + accrued_interest);
 	}
+
+	public static String getenv(String env_name) {
+        String val = System.getenv(env_name);
+        if (val==null) {
+            throw new RuntimeException("could not find environment variable " + env_name);
+        }
+        return val;
+    }
+
+	public static int getenvInt(String env_name) {
+        String valString = Util.getenv(env_name);
+        try {
+        	int val = Integer.parseInt(valString);
+        	return val;
+        }
+        catch (Exception e) {
+        	throw new RuntimeException("could not find parse integer from " + valString + " from environment variable " + env_name);
+        }
+    }
 }

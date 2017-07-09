@@ -1,5 +1,7 @@
 package bondmetrics;
 
+import bondmetrics.Util.Bond_frequency_type;
+
 import com.kalotay.akalib.Bond;
 import com.kalotay.akalib.Date;
 import com.kalotay.akalib.Duration;
@@ -9,6 +11,9 @@ import com.kalotay.akalib.Status;
 import com.kalotay.akalib.Value;
 
 public class BondOASwrapper {
+	static final ThreadLocal<InterestRateModel> model_threadLocal = new ThreadLocal<InterestRateModel>();
+	static final ThreadLocal<Bond> bond_threadLocal = new ThreadLocal<Bond>();
+	static boolean initialized = false;
 
 	public enum CurveType { FLAT, LINEAR, ASYM };
 
@@ -36,32 +41,93 @@ public class BondOASwrapper {
 	 * @param args Command line params are <KEY> <USER>
 	 */
 
-	public static void init(int key, String uname) {
-		System.loadLibrary("bondoas_java_wrap");
-		System.out.println("BondOASwrapper.main() - creating Initialization with key: " + key + " uname: " + uname);
-		Initialization akareg = new Initialization(key, uname);
-		System.out.println("BondOASwrapper.main() - created Initialization - error: " + akareg.Error());
-		if (akareg.Error() > 0) {
-			printError("BondOASwrapper.main()", akareg.ErrorString());
-			return;
-		}
+	public static void init() {
+        if (BondOASwrapper.initialized) {
+            return;
+        }
+        synchronized(BondOASwrapper.class) {
+        	if (BondOASwrapper.initialized) {
+        		return;
+        	}
+            int key = Util.getenvInt("BONDOAS_KEY");
+            String uname = Util.getenv("BONDOAS_USER");
+        	System.loadLibrary("bondoas_java_wrap");
+        	System.out.println("BondOASwrapper.init() - creating Initialization with key: " + key + " uname: " + uname);
+        	Initialization akareg = new Initialization(key, uname);
+        	System.out.println("BondOASwrapper.init() - created Initialization - error: " + akareg.Error());
+        	if (akareg.Error() > 0) {
+        		printError("BondOASwrapper.init()", akareg.ErrorString());
+        		return;
+        	}
 
-		System.out.println("BondOASwrapper.main() - Version: " +
-				Initialization.Version() 
-				+ " Expiration Libdate: " + akareg.Expiration().Libdate()
-				+ " Expiration YearOf: " + akareg.Expiration().YearOf()
-				+ " Expiration DayOf: " + akareg.Expiration().DayOf()
-				);
-
+        	System.out.println("BondOASwrapper.init() - Version: " +
+        			Initialization.Version() 
+        			+ " Expiration Libdate: " + akareg.Expiration().Libdate()
+        			+ " Expiration YearOf: " + akareg.Expiration().YearOf()
+        			+ " Expiration DayOf: " + akareg.Expiration().DayOf()
+        			);
+            BondOASwrapper.initialized = true;
+        }
 	}
 	public static void main(String args[]) {
-		BondOASwrapper.init(Integer.parseInt(args[0]), args[1]);
-		int error = exampleValuation();
-		if (error > 0)
-			printError("BondOASwrapper.main()", "exampleValuation() returned an error: " + error);
+		double yield = BondOASwrapper.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, 0.2, 100, Util.date(2016, 3, 21), Util.date(2017, 3, 21));
+        if (yield == 0.4108302388081475) {
+            System.out.println("OK bondOAS ytm test");
+        }
+        else {
+            System.out.println("FAILED");
+            throw new RuntimeException("bondOAS ytm test failed, got " + yield);
+        }
 	}
+    
+    @SuppressWarnings("deprecation")
+	public static com.kalotay.akalib.Date date_to_OASdate(java.util.Date jdate) {
+        int year = jdate.getYear() + 1900;
+        int month = jdate.getMonth() + 1;
+        int day = jdate.getDate();
+        return new com.kalotay.akalib.Date(year, month, day);
+    }
 
-	/** Example of how to value a bond.	*/
+	public static double yield_to_maturity(Bond_frequency_type frequency_type, double actual_price, double coupon_rate_as_percentage, int par, java.util.Date jsettlement, java.util.Date jmaturity) {
+        InterestRateModel model = model_threadLocal.get();
+        Bond bond;
+        if (model == null) {
+            BondOASwrapper.init();
+            model = new InterestRateModel();
+            if (!model.SetVolatility(vol))
+                System.out.format("Warning: invalid volatility '%f', using 0\n", vol);
+            if (!model.SetRate(.5, discount_rate)) {
+                System.out.format("Warning: invalid input rate '%f', using 2%%\n", discount_rate);
+                discount_rate = 2;
+                model.SetRate(.5, discount_rate);
+            }
+            model.Solve();
+            if (!msgs(model))
+                return model.Error();
+            bond = new Bond("bond_container");
+            model_threadLocal.set(model);
+            
+        }
+        
+        double coupon_rate_in_percentage_points = 100 * coupon_rate_as_percentage;
+        double coupon_rate = coupon_rate_in_percentage_points;  // OAS custom
+        
+        Date settlement = date_to_OASdate(jsettlement);
+        Date maturity = date_to_OASdate(jmaturity);
+        
+		bond = new Bond("example", settlement, maturity, coupon_rate);
+		
+		if (!msgs(bond))
+			return bond.Error();
+
+		Value value = new Value(bond, model, settlement);
+		if (!msgs(value))
+			return value.Error();
+
+        double yield_as_percentage = value.YieldToMaturity(actual_price);
+        yield_as_percentage = value.YieldToMaturity(actual_price);
+        return yield_as_percentage / 100.0;
+	}
 
 	public static int exampleValuation() {
 		Date pvdate = pvdateStr == null ? new Date(2000, 01, 01) : new Date(pvdateStr, Date.ENTRY.MDY);
