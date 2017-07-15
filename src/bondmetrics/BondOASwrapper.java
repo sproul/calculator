@@ -12,9 +12,9 @@ import com.kalotay.akalib.Value;
 
 public class BondOASwrapper {
 	static final ThreadLocal<InterestRateModel> model_threadLocal = new ThreadLocal<InterestRateModel>();
-	static final ThreadLocal<Bond> bond_threadLocal = new ThreadLocal<Bond>();
 	static boolean initialized = false;
-
+    static boolean bondOAS_library_is_available = false;    // disabling bondOAS since it appears we will not be using it anytime soon
+                                                       
 	public enum CurveType { FLAT, LINEAR, ASYM };
 
 	// ***********************************
@@ -49,6 +49,9 @@ public class BondOASwrapper {
         	if (BondOASwrapper.initialized) {
         		return;
         	}
+            if (!BondOASwrapper.bondOAS_library_is_available) {
+                throw new RuntimeException("bondOAS_library_is_available has been set to true, so this code should not be running");
+            }
             int key = Util.getenvInt("BONDOAS_KEY");
             String uname = Util.getenv("BONDOAS_USER");
         	System.loadLibrary("bondoas_java_wrap");
@@ -90,7 +93,6 @@ public class BondOASwrapper {
 
 	public static double yield_to_maturity(Bond_frequency_type frequency_type, double actual_price, double coupon_rate_as_percentage, int par, java.util.Date jsettlement, java.util.Date jmaturity) {
         InterestRateModel model = model_threadLocal.get();
-        Bond bond;
         if (model == null) {
             BondOASwrapper.init();
             model = new InterestRateModel();
@@ -104,9 +106,7 @@ public class BondOASwrapper {
             model.Solve();
             if (!msgs(model))
                 return model.Error();
-            bond = new Bond("bond_container");
             model_threadLocal.set(model);
-            
         }
         
         double coupon_rate_in_percentage_points = 100 * coupon_rate_as_percentage;
@@ -115,8 +115,7 @@ public class BondOASwrapper {
         Date settlement = date_to_OASdate(jsettlement);
         Date maturity = date_to_OASdate(jmaturity);
         
-		bond = new Bond("example", settlement, maturity, coupon_rate);
-		
+		Bond bond = new Bond("example", settlement, maturity, coupon_rate);
 		if (!msgs(bond))
 			return bond.Error();
 
@@ -125,7 +124,6 @@ public class BondOASwrapper {
 			return value.Error();
 
         double yield_as_percentage = value.YieldToMaturity(actual_price);
-        yield_as_percentage = value.YieldToMaturity(actual_price);
         return yield_as_percentage / 100.0;
 	}
 
