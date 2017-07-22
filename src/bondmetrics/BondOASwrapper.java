@@ -13,7 +13,7 @@ import com.kalotay.akalib.Value;
 public class BondOASwrapper {
 	static final ThreadLocal<InterestRateModel> model_threadLocal = new ThreadLocal<InterestRateModel>();
 	static boolean initialized = false;
-    static boolean bondOAS_library_is_available = false;    // disabling bondOAS since it appears we will not be using it anytime soon
+	public static boolean bondOAS_library_is_available = false;    // disabling bondOAS since it appears we will not be using it anytime soon
                                                        
 	public enum CurveType { FLAT, LINEAR, ASYM };
 

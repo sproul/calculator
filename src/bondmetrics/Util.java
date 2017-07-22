@@ -3,8 +3,34 @@ package bondmetrics;
 import java.util.Date;
 
 public class Util {
+	public enum Calculator_mode {
+        None,
+        Monroe,
+        BondOAS,
+        FtLabs
+    }
+	public static String calculator_mode_toString(Calculator_mode mode) {
+		return calculator_mode_toString(mode, false);
+	}
+	static String calculator_mode_toString(Calculator_mode mode, boolean noneOk) {
+		switch (mode) {
+		case None:
+			if (!noneOk) {
+				throw new RuntimeException("unexpected None value for calculator mode");
+			}
+			return "None";
+		case Monroe:
+			return "Monroe";
+		case BondOAS:
+			return "BondOAS";
+		case FtLabs:
+			return "FtLabs";
+		default:
+			throw new RuntimeException("unrecognized calculator mode " + mode);
+		}
+	}
 	private static Double ytm_increment_starting_value = 0.0000001;
-	public static boolean bondOAS_mode = false;
+	public static Calculator_mode calculator_mode = Util.init_calculator_mode();
 	public static Boolean bondOAS_available = null;
  
 	/* based on sample data interest_payment_frequency:
@@ -114,7 +140,11 @@ public class Util {
 		return new Date(year - 1900, month -1, day);
 	}
 
-    /**
+    private static Calculator_mode init_calculator_mode() {
+        return Calculator_mode.Monroe;  // default
+	}
+
+	/**
      * Given a price, bond type, and a date of maturity, return the price including markup.
      * 
      */
@@ -326,17 +356,25 @@ public class Util {
         if (coupon_rate >= 1.0) {
             throw new RuntimeException("bad coupon_rate of " + coupon_rate + " (" + (100 * coupon_rate) + "%)");
         }
-		if (Util.bondOAS_mode) {
+		switch (Util.calculator_mode) {
+        case BondOAS:
             return BondOASwrapper.yield_to_maturity(frequency_type, actual_price, coupon_rate, par, settlement, maturity);
+        case FtLabs:
+            return FtLabs.yield_to_maturity_static(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement, maturity);
+        default:
+        	break;            	
         }
         frequency_type = remap_frequency_type(frequency_type);
         interest_basis = remap_interest_basis(interest_basis);
-		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity) + 1;
         double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, interest_basis, settlement, maturity);
+        double accrued_interest = accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
+        double dirty_price = accrued_interest + actual_price;
 		int payments_per_year =  number_of_payment_periods_per_year(frequency_type);
+        if (fractional_payment_periods < 1) {
+        	return yield_to_maturity_short_term(interest_basis, coupon_rate, dirty_price, accrued_interest, payments_per_year, par, settlement, maturity);
+        }
+		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity) + 1;
 		double coupon_payment = coupon_rate * par / payments_per_year;
-		double accrued_interest = accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
-		double dirty_price = accrued_interest + actual_price;
 		double proposed_ytm = yield_to_maturity_approximate(payments_per_year, fractional_payment_periods, coupon_payment, par, dirty_price);
 		double price_that_results_from_proposed_ytm;
 		Double ytm_lower_bound = null;
@@ -396,6 +434,15 @@ public class Util {
         return ytm;
 	}
 
+	private static double yield_to_maturity_short_term(Interest_basis interest_basis, double coupon_rate, double dirty_price, double accrued_interest, int payments_per_year, int par, Date settlement, Date maturity) {
+        double last_bond_payment = coupon_rate * par / payments_per_year;
+        double payout = par + last_bond_payment;
+        double ytm_short_term = (payout / dirty_price) - 1;
+        long days = number_of_days_between(settlement, maturity);
+        double ytm = ytm_short_term * 360 / days;
+		return ytm;
+	}
+
 	private static double compute_multiplier_to_compensate_for_fractional_part(	long payment_periods, double fractional_payment_periods) {
 		if (payment_periods < fractional_payment_periods - 1) {
             throw new RuntimeException("unexpected ratio");
@@ -427,7 +474,8 @@ public class Util {
      */
     @SuppressWarnings("deprecation")
 	static int accrued_interest_days(Interest_basis interest_basis, Date date1, Date date2) {
-		if (interest_basis == Interest_basis.By_30_360_ICMA) {
+    	interest_basis = remap_interest_basis(interest_basis);
+		if (interest_basis == Interest_basis.By_30_360) {
 			int y1 = date1.getYear();
 			int y2 = date2.getYear();
 			int m1 = date1.getMonth();
@@ -448,11 +496,12 @@ public class Util {
     /*
      * Given the interest_basis and the coupon rate, calculate the daily interest rate to be used for calculating accrued interest.
      */
-	static double accrued_interest_rate_per_day(Interest_basis interest_basis, double coupon_rate) {
+	static double daily_interest_rate(Interest_basis interest_basis, double coupon_rate) {
 		interest_basis = remap_interest_basis(interest_basis);
 		switch(interest_basis) {
-        case By_30_360_ICMA:
-        case By_Actual_360:
+		case By_30_360:
+		case By_30_360_ICMA:
+		case By_Actual_360:
             return coupon_rate / 360;
         case By_Actual_365:
         case By_Actual_Actual:
@@ -462,7 +511,7 @@ public class Util {
         }
 	}
 
-    private static Interest_basis remap_interest_basis(Interest_basis interest_basis) {
+    public static Interest_basis remap_interest_basis(Interest_basis interest_basis) {
         switch (interest_basis) {
         case By_Actual_Actual:
         case By_Actual_360:
@@ -480,7 +529,7 @@ public class Util {
         case By_30_360_SIA:
         case By_30_360_US:
         case By_30_360_US_NASD:
-            return Interest_basis.By_30_360_ICMA;
+            return Interest_basis.By_30_360;
         case By_30_365:
         case By_365_365:
         case By_Actual_364:
@@ -591,7 +640,7 @@ public class Util {
         return new Date(cy, cm, cd);
     }
 
-	private static Bond_frequency_type remap_frequency_type(Bond_frequency_type frequency_type) {
+	static Bond_frequency_type remap_frequency_type(Bond_frequency_type frequency_type) {
         switch (frequency_type) {
         case SemiAnnual:
         case Monthly:
@@ -635,7 +684,7 @@ public class Util {
         case Custom:
         case Single_Interest_Payment:
         default:
-            System.out.println("Util.remap_frequency_type(" + frequency_type + "): unsure, defaulting to SemiAnnual");
+            //System.out.println("Util.remap_frequency_type(" + frequency_type + "): unsure, defaulting to SemiAnnual");
             return Bond_frequency_type.SemiAnnual;
         }
 	}
@@ -650,9 +699,9 @@ public class Util {
      */
 	public static double accrued_interest_from_time_span(Interest_basis interest_basis, double coupon_rate, int par, Date d1, Date d2) {
         interest_basis = remap_interest_basis(interest_basis);
-        double interest_rate_per_day = accrued_interest_rate_per_day(interest_basis, coupon_rate);
+        double daily_interest_rate = daily_interest_rate(interest_basis, coupon_rate);
         int    interest_days         = accrued_interest_days(        interest_basis, d1, d2);
-        double unrounded_accrued_interest = par * interest_days * interest_rate_per_day;
+        double unrounded_accrued_interest = par * interest_days * daily_interest_rate;
 		return round_to_cent(unrounded_accrued_interest);
 	}
     
