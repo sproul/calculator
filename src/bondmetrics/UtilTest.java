@@ -206,7 +206,7 @@ public class UtilTest
 	
 	public static void push_mode(Util.Calculator_mode mode) {
         if (pushed_mode != Util.Calculator_mode.None) {
-            throw new RuntimeException("no support for multiple pushes");
+            throw new RuntimeException("no support for multiple pushes, already in " + Util.calculator_mode_toString(Util.calculator_mode) + " mode");
         }
         pushed_mode = Util.calculator_mode;
         Util.calculator_mode = mode;
@@ -337,8 +337,7 @@ public class UtilTest
     
 	@Test
 	public void test_annual_multiyear_par1000() {
-		expected_result("test_annual_multiyear_par1000", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 950, 0.07, 1000, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), 0.085274, -0.466982, null, -0.2571);
-		System.out.println("test_monthly_partial disagrees with ft -0.41015");
+		expected_result("test_annual_multiyear_par1000", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 950, 0.07, 1000, Util.date(2016, 3, 21), Util.date(2020, 3, 21)), 0.085274, -0.466982);
     }
     
     
@@ -416,19 +415,19 @@ public class UtilTest
         switch (Util.calculator_mode) {
         case BondOAS:
         	if (bondOASexpected != null) {
-        		assertEquals(actual, bondOASexpected, MARGIN_FOR_ERROR);
+        		assertEquals(bondOASexpected, actual, MARGIN_FOR_ERROR);
         		return;
         	}
         	break;
         case FtLabs:
         	if (ftLabs_expected != null) {
-        		assertEquals(actual, ftLabs_expected, MARGIN_FOR_ERROR);
+        		assertEquals(ftLabs_expected, actual, MARGIN_FOR_ERROR);
         		return;
         	}
         	break;
         case Monroe:
         	if (bond_metrics_expected != null) {
-        		assertEquals(actual, bond_metrics_expected, MARGIN_FOR_ERROR);
+        		assertEquals(bond_metrics_expected, actual, MARGIN_FOR_ERROR);
         		return;
         	}
         	break;
@@ -474,9 +473,14 @@ public class UtilTest
 	}
 
 	@Test
-	public void test_annual_partial_at_par() {
-		expected_result("test_annual_partial_at_par", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.0684, 0.06706, 0.06706);
+	public void test_annual_partial_at_par2() {
+		expected_result("test_annual_partial_at_par2", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.0684, 0.06706, 0.06706);
         // fidelity 2.33 accrued
+	}
+	@Test
+	public void test_annual_partial_at_par() {
+		expected_result("test_annual_partial_at_par", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.2452, null, 0.226111823848897);
+        // fidelity 33.33 accrued
 	}
     @Test
 	public void test_semiannual_partial__OAS() {
@@ -719,7 +723,19 @@ public class UtilTest
     }
 	@Test
 	public void test_accrued_interest() {
-		assertEquals(2.0, Util.accrued_interest_from_time_span(Util.Interest_basis.By_30_360, 0.04, 100, Util.date(2017, 1, 1), Util.date(2017, 7, 1)), MARGIN_FOR_ERROR);
+		assertEquals(2.0, Util.accrued_interest_from_time_span(Util.Interest_basis.By_30_360, 0.04, 100, Util.date(2017, 1, 1), Util.date(2017, 7, 1)), 0);
+	}
+	@Test
+	public void test_accrued_interest3() {
+		expected_result("test_accrued_interest3", Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 8.33, null, null, 8.27);
+	}
+	@Test
+	public void test_accrued_interest4() {
+		assertEquals(8.33, Util.accrued_interest_from_time_span(Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2015, 11, 21), Util.date(2016, 3, 21)), 0);
+	}
+	@Test
+	public void test_accrued_interest6() {
+		assertEquals(8.33, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0);
 	}
 	@Test
 	public void test_count_months_between() {
@@ -894,48 +910,6 @@ public class UtilTest
 	public void test_accrued_interest2() {
     	// verified at http://apps.finra.org/Calcs/1/AccruedInterest
     	assertEquals(6.42, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.07, 100, Util.date(2015, 10, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
-    }
-
-	public static void main(String[] args) {
-        System.out.println("main will cf pfr between bond_metrics and OAS");
-		if (!BondOASwrapper.bondOAS_library_is_available) {
-            System.out.println("main: OAS not available...");
-            System.out.println("main: OAS not available...");
-            System.out.println("main: OAS not available...");
-            System.out.println("main: OAS not available...");
-            System.out.println("main: OAS not available...");
-			return;
-		}
-		double start;
-        double end;
-        
-        int op_cnt = 70000;
-        
-        start = System.currentTimeMillis();
-        double coupon_rate = 0.2;
-        Date settlement = Util.date(2016, 3, 21);
-		Date maturity = Util.date(2017, 3, 21);
-		for (int j = 0; j < op_cnt; j++) {
-            BondOASwrapper.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, coupon_rate, 100, settlement, maturity);
-            coupon_rate += j * 0.00001;
-        }
-        end = System.currentTimeMillis();
-        double t = end - start;
-        if (t==0) {
-            t = 1;
-        }
-        System.out.println("main: BondOASwrapper.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
-        
-        start = System.currentTimeMillis();
-        for (int j = 0; j < op_cnt; j++) {
-            Util.yield_to_maturity(Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 84.0, 0.2, 100, settlement, maturity);
-        }
-        end = System.currentTimeMillis();
-        t = end - start;
-        if (t==0) {
-            t = 1;
-        }
-        System.out.println("main: Util.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
     }
     @Test
 	public void test_annual12_partial__bondOAS() {
@@ -1259,6 +1233,78 @@ public class UtilTest
         }
         finally {
             pop_mode();
+        }
+    }
+	@Test
+	public void test_accrued_interest3__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_accrued_interest3();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+
+	public static void main(String[] args) {
+		if (args.length!=0) {
+			System.out.println("main will cf pfr between bond_metrics and OAS");
+			if (!BondOASwrapper.bondOAS_library_is_available) {
+				System.out.println("main: OAS not available...");
+				System.out.println("main: OAS not available...");
+				System.out.println("main: OAS not available...");
+				System.out.println("main: OAS not available...");
+				System.out.println("main: OAS not available...");
+				return;
+			}
+			double start;
+			double end;
+
+			int op_cnt = 70000;
+
+			start = System.currentTimeMillis();
+			double coupon_rate = 0.2;
+			Date settlement = Util.date(2016, 3, 21);
+			Date maturity = Util.date(2017, 3, 21);
+			for (int j = 0; j < op_cnt; j++) {
+				BondOASwrapper.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, coupon_rate, 100, settlement, maturity);
+				coupon_rate += j * 0.00001;
+			}
+			end = System.currentTimeMillis();
+			double t = end - start;
+			if (t==0) {
+				t = 1;
+			}
+			System.out.println("main: BondOASwrapper.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
+
+			start = System.currentTimeMillis();
+			for (int j = 0; j < op_cnt; j++) {
+				Util.yield_to_maturity(Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 84.0, 0.2, 100, settlement, maturity);
+			}
+			end = System.currentTimeMillis();
+			t = end - start;
+			if (t==0) {
+				t = 1;
+			}
+			System.out.println("main: Util.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
+		}
+		else {
+			UtilTest ut = new UtilTest();
+			ut.test_annual_multiyear_par1000__FtLabs();
+            /*
+              double x33 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21));
+            System.out.println("main: x33=" + x33);
+            double x27 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21));
+            System.out.println("main: x27=" + x27);
+            double x1 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
+            System.out.println("FTlabs 1.92: a/360=" + x1);
+            double x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
+            System.out.println("OK: 3/360=" + x2);
+            x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_Actual, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
+            System.out.println("OK: a/a=" + x2);
+            x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_365, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
+            System.out.println("OK: a/365=" + x2);
+            */
         }
     }
 }

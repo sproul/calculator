@@ -90,8 +90,9 @@ public class Util {
     }
 
     /* 
-     * based on sample data interest bases:
-     * qr.ice.grep.enums
+     * Discussed at length at https://en.wikipedia.org/wiki/Day_count_convention
+     * 
+     * Pair of settings: part 1 tells us how many days are in a month accruing interest, part 2 tells how many days are in a year for purposes of deriving the daily interest rate
      * 
      * <interest_basis type="30/360 (ICMA)">12</interest_basis>
      * Simplify accrued interest calculations by assuming all months have 30 days. Derive the daily accrued interest rate by dividing the annual rate by 360.
@@ -475,7 +476,8 @@ public class Util {
     @SuppressWarnings("deprecation")
 	static int accrued_interest_days(Interest_basis interest_basis, Date date1, Date date2) {
     	interest_basis = remap_interest_basis(interest_basis);
-		if (interest_basis == Interest_basis.By_30_360) {
+        switch (interest_basis) {
+        case By_30_360:
 			int y1 = date1.getYear();
 			int y2 = date2.getYear();
 			int m1 = date1.getMonth();
@@ -484,13 +486,18 @@ public class Util {
 			int d2 = date2.getDate();
 			int months_between = (12 * (y2 - y1)) + m2 - m1;
 			return (30 * months_between) + d2 - d1;
-		}
-		long millisecs = date2.getTime() - date1.getTime();
-		long long_days = millisecs / (1000 * 24 * 60 * 60);
-		if (long_days > 1000000) {
-			throw new RuntimeException("unreasonable span of days for accrued interest=" + long_days);
-		}
-		return (int) long_days;
+        case By_Actual_Actual:
+        case By_Actual_360:
+        case By_Actual_365:
+            long millisecs = date2.getTime() - date1.getTime();
+            long long_days = millisecs / (1000 * 24 * 60 * 60);
+            if (long_days > 1000000) {
+                throw new RuntimeException("unreasonable span of days for accrued interest=" + long_days);
+            }
+            return (int) long_days;
+        default:
+            throw new RuntimeException("unexpected interest basis " + interest_basis);
+        }
 	}
 
     /*
@@ -516,12 +523,11 @@ public class Util {
         case By_Actual_Actual:
         case By_Actual_360:
         case By_Actual_365:
-        case By_30_360_ICMA:
+        case By_30_360:
             return interest_basis;
         case By_30E_360:
         case By_30E_360_ISDA:
         case By_30E_360b:
-        case By_30_360:
         case By_30_360_BMA:
         case By_30_360_Compounded_Interest:
         case By_30_360_ISDA:
@@ -552,6 +558,12 @@ public class Util {
      * 					2.) the settlement date.
      */
 	public static double accrued_interest_at_settlement(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement, Date maturity) {
+		switch (Util.calculator_mode) {
+        case FtLabs:
+            return FtLabs.accrued_interest_at_settlement_static(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
+        default:
+        	break;            	
+        }
         frequency_type = remap_frequency_type(frequency_type);
         interest_basis = remap_interest_basis(interest_basis);
         Date last_coupon_payment_date = find_coupon_payment_date_preceding_or_coinciding_with_settlement(frequency_type, settlement, maturity);
@@ -702,6 +714,7 @@ public class Util {
         double daily_interest_rate = daily_interest_rate(interest_basis, coupon_rate);
         int    interest_days         = accrued_interest_days(        interest_basis, d1, d2);
         double unrounded_accrued_interest = par * interest_days * daily_interest_rate;
+        //System.out.println("accrued_interest_from_time_span: daily_interest_rate="+daily_interest_rate+", interest_days="+interest_days);
 		return round_to_cent(unrounded_accrued_interest);
 	}
     
