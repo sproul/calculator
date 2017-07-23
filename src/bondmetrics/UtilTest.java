@@ -677,55 +677,87 @@ public class UtilTest
         assertEquals(oasDate.MonthOf(), oasDate2.MonthOf());
         assertEquals(oasDate.DayOf(), oasDate2.DayOf());
     }
-    //@Test
-	public void test_yield_to_worst__c1() {
-        Date maturity = Util.date(2016, 11, 21);
+    @Test
+	public void test_yield_to_worst__is_maturity() {
+        Date maturity = Util.date(2019, 5, 15);
         Date settlement = Util.date(2016, 5, 15);
         Date c1 = Util.date(2017, 5, 15);
         Date c2 = Util.date(2018, 5, 15);
-        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, maturity);
-        double ytc1 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, c1);
-        double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, c2);
-		assertEquals(0.179, ytm, UtilTest.MARGIN_FOR_ERROR);
-		assertEquals(-1, ytc1, UtilTest.MARGIN_FOR_ERROR);
-		assertEquals(-1, ytc2, UtilTest.MARGIN_FOR_ERROR);
+        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 106, settlement, maturity);
+        double ytc1 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 106, settlement, c1);
+        double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 106, settlement, c2);
         Date[] call_dates = { c1, c2 };
-		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, maturity, call_dates);
-		assertEquals(ytw, ytc1, UtilTest.MARGIN_FOR_ERROR);
+		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 100, 0.07, 106, settlement, maturity, call_dates);
+		assertTrue("ytw < ytc1", ytw < ytc1);
 		assertTrue("ytw < ytc2", ytw < ytc2);
-		assertTrue(ytw < ytm);
+		assertEquals(ytm, ytw, UtilTest.MARGIN_FOR_ERROR);
     }
 
-    //@Test
-	public void test_yield_to_worst__c2_because_c1_precedes_settlement() {
-        Date maturity = Util.date(2016, 11, 21);
+    @Test
+	public void test_yield_to_worst__c1() {
+        Date maturity = Util.date(2020, 5, 15);
         Date settlement = Util.date(2016, 5, 15);
-        Date c1 = Util.date(2015, 5, 15);
+        Date c1 = Util.date(2017, 5, 15);
         Date c2 = Util.date(2018, 5, 15);
-        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, maturity);
-        double ytc1 = 0; // can't legally calculate yield when the date is before settlement
-        double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, c2);
-		assertEquals(0.179, ytm, UtilTest.MARGIN_FOR_ERROR);
-		assertEquals(-1, ytc1, UtilTest.MARGIN_FOR_ERROR);
-		assertEquals(-1, ytc2, UtilTest.MARGIN_FOR_ERROR);
-        Date[] call_dates = { c1, c2 };
-		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 95, 0.07, 100, settlement, maturity, call_dates);
-		assertEquals(ytw, ytc1, UtilTest.MARGIN_FOR_ERROR);
+        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity);
+        double ytc1 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c1);
+        double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c2);
+		Date[] call_dates = { c1, c2 };
+		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity, call_dates);
+        System.out.println("ytm=" +ytm+", ytc1="+ytc1+", ytc2="+ytc2);
 		assertTrue("ytw < ytc2", ytw < ytc2);
 		assertTrue(ytw < ytm);
+		assertEquals(ytc1, ytw, UtilTest.MARGIN_FOR_ERROR);
     }
 
-    //@Test
-	public void test_yield_to_worst__c2() {
-		fail(); // rewrite for c2
+    @Test
+	public void test_yield_to_worst__c2_because_c1_precedes_settlement() {
+        Date maturity = Util.date(2020, 5, 15);
+        Date settlement = Util.date(2017, 5, 16);
+        Date c1 = Util.date(2017, 5, 15);
+        Date c2 = Util.date(2018, 5, 15);
+        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity);
+        try {
+        	Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c1);
+        	fail("should have thrown an exception for settlement following c1");
+        }
+        catch(RuntimeException e) {
+        	// expected
+        }
+        double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c2);
+		Date[] call_dates = { c1, c2 };
+		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity, call_dates);
+        System.out.println("ytm=" +ytm+", ytc1="+ytc2+", ytc2="+ytc2);
+		assertTrue(ytw < ytm);
+		assertEquals(ytc2, ytw, UtilTest.MARGIN_FOR_ERROR);   
     }
-    
-    //@Test
-	public void test_yield_to_worst__ytm() {
-    	Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.07, 100, Util.date(2015, 10, 21), Util.date(2016, 11, 21)); // 6.475
-		assertTrue(false); // rewrite for ytm
+
+    @Test
+	public void test_yield_to_worst__maturity_because_call_dates_are_past() {
+        Date maturity = Util.date(2020, 5, 15);
+        Date settlement = Util.date(2020, 3, 15);
+        Date c1 = Util.date(2017, 5, 15);
+        Date c2 = Util.date(2018, 5, 15);
+        try {
+        	Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c1);
+        	fail("should have thrown an exception for settlement following c1");
+        }
+        catch(RuntimeException e) {
+        	// expected
+        }
+        try {
+        	Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c2);
+        	fail("should have thrown an exception for settlement following c2");
+        }
+        catch(RuntimeException e) {
+        	// expected
+        }
+        double ytm = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity);
+        Date[] call_dates = { c1, c2 };
+		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity, call_dates);
+		assertEquals(ytm, ytw, UtilTest.MARGIN_FOR_ERROR);
     }
-    
+        
     @Test
 	public void test_round_to_cent() {
         assertEquals(0, Util.round_to_cent(0), UtilTest.MARGIN_FOR_ERROR);
@@ -1078,39 +1110,33 @@ public class UtilTest
     }
 
 	public static void main(String[] args) {
-		if (args.length!=0) {
+		if (args.length==0) {
 			System.out.println("main will cf pfr between bond_metrics and OAS");
-			if (!BondOASwrapper.bondOAS_library_is_available) {
-				System.out.println("main: OAS not available...");
-				System.out.println("main: OAS not available...");
-				System.out.println("main: OAS not available...");
-				System.out.println("main: OAS not available...");
-				System.out.println("main: OAS not available...");
-				return;
-			}
 			double start;
 			double end;
 
 			int op_cnt = 70000;
 
-			start = System.currentTimeMillis();
 			double coupon_rate = 0.2;
 			Date settlement = Util.date(2016, 3, 21);
 			Date maturity = Util.date(2017, 3, 21);
+			start = System.currentTimeMillis();
 			for (int j = 0; j < op_cnt; j++) {
-				BondOASwrapper.yield_to_maturity(Bond_frequency_type.SemiAnnual, 84.0, coupon_rate, 100, settlement, maturity);
-				coupon_rate += j * 0.00001;
+				FtLabs.yield_to_maturity_static(Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 84.0, coupon_rate, 100, settlement, maturity);
+				coupon_rate += 0.0000001;
 			}
 			end = System.currentTimeMillis();
 			double t = end - start;
 			if (t==0) {
 				t = 1;
 			}
-			System.out.println("main: BondOASwrapper.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
+			System.out.println("main: FtLabs.yield_to_maturity " + (1000 * op_cnt / t) + " ops/sec");
 
+			coupon_rate = 0.2;
 			start = System.currentTimeMillis();
 			for (int j = 0; j < op_cnt; j++) {
-				Util.yield_to_maturity(Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 84.0, 0.2, 100, settlement, maturity);
+				Util.yield_to_maturity(Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 84.0, coupon_rate, 100, settlement, maturity);
+				coupon_rate += 0.00000001;
 			}
 			end = System.currentTimeMillis();
 			t = end - start;

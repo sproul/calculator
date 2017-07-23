@@ -329,8 +329,6 @@ public class Util {
 	}
 
 	public static double yield_to_worst(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price, double coupon_rate, int par, Date settlement, Date maturity, Date[] call_or_sink_dates) {
-        return 0;
-        /*
         // http://www.investinganswers.com/financial-dictionary/bonds/yield-worst-ytw-2761
         double worst = yield_to_maturity(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement, maturity);
         for (int j = 0; j < call_or_sink_dates.length; j++) {
@@ -347,7 +345,6 @@ public class Util {
             }
         }
         return worst;
-        */
 	}
 	
 	public static double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price, double coupon_rate, int par, Date settlement, Date maturity) {
