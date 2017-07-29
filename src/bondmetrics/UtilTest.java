@@ -56,7 +56,7 @@ public class UtilTest
     static Util.Calculator_mode pushed_mode = Util.Calculator_mode.None;
 	private static String last_test_parms = "";
 	public static final int DEFAULT_PAR = 100;
-	private static final double MARGIN_FOR_ERROR = 0.000005;
+	private static final double MARGIN_FOR_ERROR = 0.00005;
 	
     static boolean equalish(double a, double b) {
         double diff = a - b;
@@ -76,7 +76,7 @@ public class UtilTest
                         fidelity_expected, bondOASexpected, bond_metrics_expected, ftLabs_expected);
 	}
     static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected, Double ftLabs_expected) {
-        bond_metrics_expected = null;
+        //bond_metrics_expected = null;
         test_count++;
         boolean ok = false;
         String z = test_name + "." + Util.calculator_mode_toString(Util.calculator_mode) + "/" + last_test_parms;
