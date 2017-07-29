@@ -91,7 +91,7 @@ public class BondOASwrapper {
         return new com.kalotay.akalib.Date(year, month, day);
     }
 
-	public static double yield_to_maturity(Bond_frequency_type frequency_type, double actual_price, double coupon_rate_as_percentage, int par, java.util.Date jsettlement, java.util.Date jmaturity) {
+	public static double yield_to_maturity(Bond_frequency_type frequency_type, double clean_price, double coupon_rate_as_percentage, int par, java.util.Date jsettlement, java.util.Date jmaturity) {
         InterestRateModel model = model_threadLocal.get();
         if (model == null) {
             BondOASwrapper.init();
@@ -123,7 +123,7 @@ public class BondOASwrapper {
 		if (!msgs(value))
 			return value.Error();
 
-        double yield_as_percentage = value.YieldToMaturity(actual_price);
+        double yield_as_percentage = value.YieldToMaturity(clean_price);
         return yield_as_percentage / 100.0;
 	}
 

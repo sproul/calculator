@@ -63,17 +63,17 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
         }
     }
 
-	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price,
+	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
                                            double coupon_rate, int par, Date settlement_date, Date maturity_date) {
         FtLabs ft = new FtLabs();
-        return ft.yield_to_maturity(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement_date, maturity_date);
+        return ft.yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date);
     }
     
 	@Override
-	public double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price,
+	public double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
                                     double coupon_rate, int par, Date settlement_date, Date maturity_date) {
 		double ftLabs_price_multipllier = par / 100;
-		double price_as_percentage = actual_price / ftLabs_price_multipllier; 
+		double price_as_percentage = clean_price / ftLabs_price_multipllier; 
         FixedInterestRateSecurity security = new FixedInterestRateSecurity( Market.US.GENERICBOND);
         //Date payment_date_preceding_or_coinciding_with_settlement = Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(frequency_type, settlement_date, maturity_date);
         //FISADate fisa_dated_date = date_to_FISADate(payment_date_preceding_or_coinciding_with_settlement);
@@ -143,7 +143,7 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
 	static double accrued_interest_at_settlement_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement_date, Date maturity_date) {
         FtLabs ft = new FtLabs();
         double unrounded_accrued_interest = 100 * ft.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date);
-        return Util.round_to_cent(unrounded_accrued_interest);
+        return unrounded_accrued_interest;
     }
     
 	@Override
@@ -199,19 +199,17 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
 
 	public static void ft_case() {
         FixedInterestRateSecurity security = new FixedInterestRateSecurity(Market.US.GENERICBOND);
-        FISADate fisa_maturity_date = new FISADate(2020, 3, 21);
+        FISADate fisa_maturity_date = new FISADate(2015, 2, 21);
 		security.setMaturity(fisa_maturity_date);
-		security.setParValue(1000);
-        security.setInterestRate(7);
+		security.setParValue(100);
+        security.setInterestRate(20);
         security.setInterestFrequency(InterestFrequency.ANNUAL);
         security.setDayCountBasis(DayCountBasis._30_360);
         try 
         {
-        	Calculator calculator = security.getCalculator(new FISADate(2016, 3, 21));
-        	double ytm = calculator.calculateYield(95);
+        	Calculator calculator = security.getCalculator(new FISADate(2013, 8, 21));
+        	double ytm = calculator.calculateYield(100);
             System.out.println("ft_case: ytm=" + ytm);
-        	double accrued_interest = calculator.calculateAccruedInterest();
-            System.out.println("ft_case: accrued_interest=" + accrued_interest);
         }
         catch (CalculationException e) {
         	throw new RuntimeException("unexpected exception in ftlabs yield code: " + e);

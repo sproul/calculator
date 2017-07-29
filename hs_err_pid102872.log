@@ -1,0 +1,875 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x000000006daedc17, pid=102872, tid=98956
+#
+# JRE version: 6.0_45-b06
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (20.45-b01 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# V  [jvm.dll+0x20dc17]
+#
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000000520800):  VMThread [stack: 0x0000000006640000,0x0000000006740000] [id=98956]
+
+siginfo: ExceptionCode=0xc0000005, reading address 0x0000000000000000
+
+Registers:
+RAX=0x0000000000000000, RBX=0x000000000673f1d0, RCX=0x000000000673f1d0, RDX=0x0000000000000000
+RSP=0x000000000673f060, RBP=0x00000000000000b8, RSI=0x0000000000000000, RDI=0x000000000673f860
+R8 =0x0000000000000000, R9 =0x0000000000002148, R10=0x00000007800e75e8, R11=0x000000006deb7080
+R12=0x00000000000000c4, R13=0x00000000068eb1d8, R14=0x000000006d8e0000, R15=0x0000000000000000
+RIP=0x000000006daedc17, EFLAGS=0x0000000000010206
+
+Top of Stack: (sp=0x000000000673f060)
+0x000000000673f060:   0000000000000000 0000000000000010
+0x000000000673f070:   000000000673f1d0 0000000000000000
+0x000000000673f080:   0000000000000000 0000000000000000
+0x000000000673f090:   0000000000000000 0000000000000000
+0x000000000673f0a0:   0000000000000000 0000000000800000
+0x000000000673f0b0:   000000000673f1d0 0000000000000000
+0x000000000673f0c0:   0000000077ab2890 000007fefd9e133c
+0x000000000673f0d0:   0000000000000000 0000000000000000
+0x000000000673f0e0:   0000000000000000 0000000000000000
+0x000000000673f0f0:   0000000000000000 000000006d987ca8
+0x000000000673f100:   0000000000000000 0000000000000000
+0x000000000673f110:   000000000047c480 0000000000596e00
+0x000000000673f120:   0000000000000000 000000006daedcd3
+0x000000000673f130:   0000000000000000 000000006d9a387d
+0x000000000673f140:   000000000673f2a0 000000000047c480
+0x000000000673f150:   00000007800e75e8 000000006daed842 
+
+Instructions: (pc=0x000000006daedc17)
+0x000000006daedbf7:   00 1b db 20 00 be db 20 00 48 53 48 81 ec 20 01
+0x000000006daedc07:   00 00 48 8b 41 08 c7 41 10 00 00 00 00 48 8b d9
+0x000000006daedc17:   48 8b 10 80 7a 12 28 74 30 48 8d 15 d1 f5 3d 00
+0x000000006daedc27:   48 8d 4c 24 20 41 b8 28 00 00 00 e8 29 3b df ff 
+
+
+Register to memory mapping:
+
+RAX=0x0000000000000000 is an unknown value
+RBX=0x000000000673f1d0 is an unknown value
+RCX=0x000000000673f1d0 is an unknown value
+RDX=0x0000000000000000 is an unknown value
+RSP=0x000000000673f060 is an unknown value
+RBP=0x00000000000000b8 is an unknown value
+RSI=0x0000000000000000 is an unknown value
+RDI=0x000000000673f860 is an unknown value
+R8 =0x0000000000000000 is an unknown value
+R9 =0x0000000000002148 is an unknown value
+R10=0x00000007800e75e8 is an oop
+{constant pool} 
+ - klass: {other class}
+ - cache: 0x00000007800e8e80
+ -   1 :  : 'bondmetrics/Util'
+ -   2 :  : 'bondmetrics/Util'
+ -   3 :  : 'java/lang/Object'
+ -   4 :  : 'java/lang/Object'
+ -   5 :  : 'ytm_increment_starting_value'
+ -   6 :  : 'Ljava/lang/Double;'
+ -   7 :  : 'calculator_mode'
+ -   8 :  : 'Lbondmetrics/Util$Calculator_mode;'
+ -   9 :  : 'bondOAS_available'
+ -  10 :  : 'Ljava/lang/Boolean;'
+ -  11 :  : '$SWITCH_TABLE$bondmetrics$Util$Calculator_mode'
+ -  12 :  : '[I'
+ -  13 :  : '$SWITCH_TABLE$bondmetrics$Util$Bond_frequency_type'
+ -  14 :  : '$SWITCH_TABLE$bondmetrics$Util$Interest_basis'
+ -  15 :  : '<clinit>'
+ -  16 :  : '()V'
+ -  17 :  : 'Code'
+ -  18 :  : 0.000000
+ -  20 :  : klass_index=21 name_and_type_index=23
+ -  21 :  : 'java/lang/Double'
+ -  22 :  : 'java/lang/Double'
+ -  23 :  : name_index=24 signature_index=25
+ -  24 :  : 'valueOf'
+ -  25 :  : '(D)Ljava/lang/Double;'
+ -  26 :  : klass_index=1 name_and_type_index=27
+ -  27 :  : name_index=5 signature_index=6
+ -  28 :  : klass_index=1 name_and_type_index=29
+ -  29 :  : name_index=30 signature_index=31
+ -  30 :  : 'init_calculator_mode'
+ -  31 :  : '()Lbondmetrics/Util$Calculator_mode;'
+ -  32 :  : klass_index=1 name_and_type_index=33
+ -  33 :  : name_index=7 signature_index=8
+ -  34 :  : klass_index=1 name_and_type_index=35
+ -  35 :  : name_index=9 signature_index=10
+ -  36 :  : 'LineNumberTable'
+ -  37 :  : 'LocalVariableTable'
+ -  38 :  : '<init>'
+ -  39 :  : klass_index=3 name_and_type_index=40
+ -  40 :  : name_index=38 signature_index=16
+ -  41 :  : 'this'
+ -  42 :  : 'Lbondmetrics/Util;'
+ -  43 :  : 'calculator_mode_toString'
+ -  44 :  : '(Lbondmetrics/Util$Calculator_mode;)Ljava/lang/String;'
+ -  45 :  : klass_index=1 name_and_type_index=46
+ -  46 :  : name_index=43 signature_index=47
+ -  47 :  : '(Lbondmetrics/Util$Calculator_mode;Z)Ljava/lang/String;'
+ -  48 :  : 'mode'
+ -  49 :  : klass_index=1 name_and_type_index=50
+ -  50 :  : name_index=11 signature_index=51
+ -  51 :  : '()[I'
+ -  52 :  : klass_index=53 name_and_type_index=55
+ -  53 :  : 'bondmetrics/Util$Calculator_mode'
+ -  54 :  : 'bondmetrics/Util$Calculator_mode'
+ -  55 :  : name_index=56 signature_index=57
+ -  56 :  : 'ordinal'
+ -  57 :  : '()I'
+ -  58 :  : 'java/lang/RuntimeException'
+ -  59 :  : 'java/lang/RuntimeException'
+ -  60 :  : "unexpected None value for calculator mode" {0x800eaf98}
+ -  61 :  : 'unexpected None value for calculator mode'
+ -  62 :  : klass_index=58 name_and_type_index=63
+ -  63 :  : name_index=38 signature_index=64
+ -  64 :  : '(Ljava/lang/String;)V'
+ -  65 :  : "None" {0x800a2530}
+ -  66 :  : 'None'
+ -  67 :  : "Monroe" {0x800a2568}
+ -  68 :  : 'Monroe'
+ -  69 :  : "BondOAS" {0x800a25a8}
+ -  70 :  : 'BondOAS'
+ -  71 :  : "FtLabs" {0x800a25e8}
+ -  72 :  : 'FtLabs'
+ -  73 :  : 'java/lang/StringBuilder'
+ -  74 :  : 'java/lang/StringBuilder'
+ -  75 :  : "unrecognized calculator mode " {0x800eb020}
+ -  76 :  : 'unrecognized calculator mode '
+ -  77 :  : klass_index=73 name_and_type_index=63
+ -  78 :  : klass_index=73 name_and_type_index=79
+ -  79 :  : name_index=80 signature_index=81
+ -  80 :  : 'append'
+ -  81 :  : '(Ljava/lang/Object;)Ljava/lang/StringBuilder;'
+ -  82 :  : klass_index=73 name_and_type_index=83
+ -  83 :  : name_index=84 signature_index=85
+ -  84 :  : 'toString'
+ -  85 :  : '()Ljava/lang/String;'
+ -  86 :  : 'noneOk'
+ -  87 :  : 'Z'
+ -  88 :  : 'StackMapTable'
+ -  89 :  : 'date'
+ -  90 :  : '(III)Ljava/util/Date;'
+ -  91 :  : 'java/util/Date'
+ -  92 :  : 'java/util/Date'
+ -  93 :  : klass_index=91 name_and_type_index=94
+ -  94 :  : name_index=38 signature_index=95
+ -  95 :  : '(III)V'
+ -  96 :  : 'year'
+ -  97 :  : 'I'
+ -  98 :  : 'month'
+ -  99 :  : 'day'
+ - 100 :  : klass_index=53 name_and_type_index=101
+ - 101 :  : name_index=68 signature_index=8
+ - 102 :  : 'number_of_payment_periods_between'
+ - 103 :  : '(Lbondmetrics/Util$Bond_frequency_type;Ljava/util/Date;Ljava/util/Date;)I'
+ - 104 :  : klass_index=1 name_and_type_index=105
+ - 105 :  : name_index=106 signature_index=107
+ - 106 :  : 'day_after'
+ - 107 :  : '(Ljava/util/Date;)Ljava/util/Date;'
+ - 108 :  : klass_index=1 name_and_type_index=109
+ - 109 :  : name_index=110 signature_index=111
+ - 110 :  : 'remap_frequency_type'
+ - 111 :  : '(Lbondmetrics/Util$Bond_frequency_type;)Lbondmetrics/Util$Bond_frequency_type;'
+ - 112 :  : klass_index=1 name_and_type_index=113
+ - 113 :  : name_index=13 signature_index=51
+ - 114 :  : klass_index=115 name_and_type_index=55
+ - 115 :  : 'bondmetrics/Util$Bond_frequency_type'
+ - 116 :  : 'bondmetrics/Util$Bond_frequency_type'
+ - 117 :  : klass_index=1 name_and_type_index=118
+ - 118 :  : name_index=119 signature_index=120
+ - 119 :  : 'number_of_years_between'
+ - 120 :  : '(Ljava/util/Date;Ljava/util/Date;)I'
+ - 121 :  : klass_index=1 name_and_type_index=122
+ - 122 :  : name_index=123 signature_index=120
+ - 123 :  : 'number_of_half_years_between'
+ - 124 :  : klass_index=1 name_and_type_index=125
+ - 125 :  : name_index=126 signature_index=120
+ - 126 :  : 'number_of_quarters_between'
+ - 127 :  : klass_index=1 name_and_type_index=128
+ - 128 :  : name_index=129 signature_index=120
+ - 129 :  : 'number_of_months_between'
+ - 130 :  : "unknown frequency type " {0x800eb090}
+ - 131 :  : 'unknown frequency type '
+ - 132 :  : 'frequency_type'
+ - 133 :  : 'Lbondmetrics/Util$Bond_frequency_type;'
+ - 134 :  : 'd1'
+ - 135 :  : 'Ljava/util/Date;'
+ - 136 :  : 'd2'
+ - 137 :  : klass_index=91 name_and_type_index=138
+ - 138 :  : name_index=139 signature_index=57
+ - 139 :  : 'getYear'
+ - 140 :  : klass_index=91 name_and_type_index=141
+ - 141 :  : name_index=142 signature_index=57
+ - 142 :  : 'getMonth'
+ - 143 :  : klass_index=91 name_and_type_index=144
+ - 144 :  : name_index=145 signature_index=57
+ - 145 :  : 'getDate'
+ - 146 :  : 'fractional_number_of_payment_periods_between'
+ - 147 :  : '(Lbondmetrics/Util$Bond_frequency_type;Lbondmetrics/Util$Interest_basis;Ljava/util/Date;Ljava/util/Date;)D'
+ - 148 :  : klass_index=1 name_and_type_index=149
+ - 149 :  : name_index=150 signature_index=151
+ - 150 :  : 'remap_interest_basis'
+ - 151 :  : '(Lbondmetrics/Util$Interest_basis;)Lbondmetrics/Util$Interest_basis;'
+ - 152 :  : klass_index=1 name_and_type_index=153
+ - 153 :  : name_index=14 signature_index=51
+ - 154 :  : klass_index=155 name_and_type_index=55
+ - 155 :  : 'bondmetrics/Util$Interest_basis'
+ - 156 :  : 'bondmetrics/Util$Interest_basis'
+ - 157 :  : klass_index=1 name_and_type_index=158
+ - 158 :  : name_index=159 signature_index=160
+ - 159 :  : 'number_of_days_between'
+ - 160 :  : '(Ljava/util/Date;Ljava/util/Date;)J'
+ - 161 :  : klass_index=1 name_and_type_index=162
+ - 162 :  : name_index=163 signature_index=120
+ - 163 :  : 'difference_in_months'
+ - 164 :  : klass_index=1 name_and_type_index=165
+ - 165 :  : name_index=166 signature_index=167
+ - 166 :  : 'difference_in_month_days'
+ - 167 :  : '(Ljava/util/Date;Ljava/util/Date;Z)I'
+ - 168 :  : 30.000000
+ - 170 :  : 365.000000
+ - 172 :  : 182.500000
+ - 174 :  : 91.250000
+ - 176 :  : 30.500000
+ - 178 :  : 'interest_basis'
+ - 179 :  : 'Lbondmetrics/Util$Interest_basis;'
+ - 180 :  : 'year_length'
+ - 181 :  : 'mode_30_day_months'
+ - 182 :  : 'days'
+ - 183 :  : 'J'
+ - 184 :  : 'year_count'
+ - 185 :  : 'months_left_over'
+ - 186 :  : 'days_left_over'
+ - 187 :  : "impl" {0x800eb0f0}
+ - 188 :  : 'impl'
+ - 189 :  : 'mode_30_360'
+ - 190 :  : 'n'
+ - 191 :  : 'months'
+ - 192 :  : 'y1'
+ - 193 :  : 'y2'
+ - 194 :  : 'm1'
+ - 195 :  : 'm2'
+ - 196 :  : 'day1'
+ - 197 :  : 'day2'
+ - 198 :  : klass_index=91 name_and_type_index=199
+ - 199 :  : name_index=200 signature_index=201
+ - 200 :  : 'getTime'
+ - 201 :  : '()J'
+ - 202 :  : 86400000
+ - 204 :  : 't1'
+ - 205 :  : 't2'
+ - 206 :  : 'yield_to_maturity_approximate'
+ - 207 :  : '(IDDID)D'
+ - 208 :  : 2.000000
+ - 210 :  : 'payments_per_year'
+ - 211 :  : 'years_to_maturity'
+ - 212 :  : 'D'
+ - 213 :  : 'coupon_payment'
+ - 214 :  : 'par'
+ - 215 :  : 'price'
+ - 216 :  : 'c'
+ - 217 :  : 'f'
+ - 218 :  : 'p'
+ - 219 :  : 'approx_ytm'
+ - 220 :  : 'price_from_ytm'
+ - 221 :  : '(IJDDI)D'
+ - 222 :  : "payment_periods must be a positive number (not " {0x800eb128}
+ - 223 :  : 'payment_periods must be a positive number (not '
+ - 224 :  : klass_index=73 name_and_type_index=225
+ - 225 :  : name_index=80 signature_index=226
+ - 226 :  : '(J)Ljava/lang/StringBuilder;'
+ - 227 :  : ")" {0x800eb1b8}
+ - 228 :  : ')'
+ - 229 :  : klass_index=73 name_and_type_index=230
+ - 230 :  : name_index=80 signature_index=231
+ - 231 :  : '(Ljava/lang/String;)Ljava/lang/StringBuilder;'
+ - 232 :  : klass_index=233 name_and_type_index=235
+ - 233 :  : 'java/lang/Math'
+ - 234 :  : 'java/lang/Math'
+ - 235 :  : name_index=236 signature_index=237
+ - 236 :  : 'pow'
+ - 237 :  : '(DD)D'
+ - 238 :  : 'payment_periods'
+ - 239 :  : 'ytm'
+ - 240 :  : 'ytm_per_payment'
+ - 241 :  : 'x'
+ - 242 :  : 't'
+ - 243 :  : 'gain_for_period'
+ - 244 :  : 'yield_to_worst'
+ - 245 :  : '(Lbondmetrics/Util$Bond_frequency_type;Lbondmetrics/Util$Interest_basis;DDILjava/util/Date;Ljava/util/Date;[Ljava/util/Date;)D'
+ - 246 :  : klass_index=1 name_and_type_index=247
+ - 247 :  : name_index=248 signature_index=249
+ - 248 :  : 'yield_to_maturity'
+ - 249 :  : '(Lbondmetrics/Util$Bond_frequency_type;Lbondmetrics/Util$Interest_basis;DDILjava/util/Date;Ljava/util/Date;)D'
+ - 250 :  : "call date must precede maturity, but " {0x800eb1f0}
+ - 251 :  : 'call date must precede maturity, but '
+ - 252 :  : " is after " {0x800eb270}
+ - 253 :  : ' is after '
+ - 254 :  : 'actual_price'
+ - 255 :  : 'coupon_rate'
+ - 256 :  : 'settlement'
+ - 257 :  : 'maturity'
+ - 258 :  : 'call_or_sink_dates'
+ - 259 :  : '[Ljava/util/Date;'
+ - 260 :  : 'worst'
+ - 261 :  : 'j'
+ - 262 :  : 'cdj'
+ - 263 :  : "settlement must precede maturity" {0x800eb2b8}
+ - 264 :  : 'settlement must precede maturity'
+ - 265 :  : "bad coupon_rate of " {0x800eb328}
+ - 266 :  : 'bad coupon_rate of '
+ - 267 :  : klass_index=73 name_and_type_index=268
+ - 268 :  : name_index=80 signature_index=269
+ - 269 :  : '(D)Ljava/lang/StringBuilder;'
+ - 270 :  : " (" {0x800eb380}
+ - 271 :  : ' ('
+ - 272 :  : 100.000000
+ - 274 :  : "%)" {0x800eb3b8}
+ - 275 :  : '%)'
+ - 276 :  : klass_index=277 name_and_type_index=279
+ - 277 :  : 'bondmetrics/BondOASwrapper'
+ - 278 :  : 'bondmetrics/BondOASwrapper'
+ - 279 :  : name_index=248 signature_index=280
+ - 280 :  : '(Lbondmetrics/Util$Bond_frequency_type;DDILjava/util/Date;Ljava/util/Date;)D'
+ - 281 :  : klass_index=282 name_and_type_index=284
+ - 282 :  : 'bondmetrics/FtLabs'
+ - 283 :  : 'bondmetrics/FtLabs'
+ - 284 :  : name_index=285 signature_index=249
+ - 285 :  : 'yield_to_maturity_static'
+ - 286 :  : klass_index=1 name_and_type_index=287
+ - 287 :  : name_index=146 signature_index=147
+ - 288 :  : klass_index=1 name_and_type_index=289
+ - 289 :  : name_index=290 signature_index=291
+ - 290 :  : 'accrued_interest_at_settlement'
+ - 291 :  : '(Lbondmetrics/Util$Bond_frequency_type;Lbondmetrics/Util$Interest_basis;DILjava/util/Date;Ljava/util/Date;)D'
+ - 292 :  : klass_index=1 name_and_type_index=293
+ - 293 :  : name_index=294 signature_index=295
+ - 294 :  : 'number_of_payment_periods_per_year'
+ - 295 :  : '(Lbondmetrics/Util$Bond_frequency_type;)I'
+ - 296 :  : klass_index=1 name_and_type_index=297
+ - 297 :  : name_index=298 signature_index=299
+ - 298 :  : 'yield_to_maturity_short_term'
+ - 299 :  : '(Lbondmetrics/Util$Interest_basis;DDDIILjava/util/Date;Ljava/util/Date;)D'
+ - 300 :  : klass_index=1 name_and_type_index=301
+ - 301 :  : name_index=102 signature_index=103
+ - 302 :  : klass_index=1 name_and_type_index=303
+ - 303 :  : name_index=206 signature_index=207
+ - 304 :  : -100000000.000000
+ - 306 :  : klass_index=1 name_and_type_index=307
+ - 307 :  : name_index=220 signature_index=221
+ - 308 :  : klass_index=233 name_and_type_index=309
+ - 309 :  : name_index=310 signature_index=311
+ - 310 :  : 'abs'
+ - 311 :  : '(D)D'
+ - 312 :  : 0.001000
+ - 314 :  : klass_index=21 name_and_type_index=315
+ - 315 :  : name_index=316 signature_index=317
+ - 316 :  : 'doubleValue'
+ - 317 :  : '()D'
+ - 318 :  : "unexpected ytm_upper_bound=" {0x800eb3f0}
+ - 319 :  : 'unexpected ytm_upper_bound='
+ - 320 :  : klass_index=321 name_and_type_index=323
+ - 321 :  : 'java/lang/Boolean'
+ - 322 :  : 'java/lang/Boolean'
+ - 323 :  : name_index=24 signature_index=324
+ - 324 :  : '(Z)Ljava/lang/Boolean;'
+ - 325 :  : "unexpected ytm_lower_bound=" {0x800eb458}
+ - 326 :  : 'unexpected ytm_lower_bound='
+ - 327 :  : "unexpected crossing of bounds" {0x800eb4c0}
+ - 328 :  : 'unexpected crossing of bounds'
+ - 329 :  : klass_index=321 name_and_type_index=330
+ - 330 :  : name_index=331 signature_index=332
+ - 331 :  : 'booleanValue'
+ - 332 :  : '()Z'
+ - 333 :  : 0.000000
+ - 335 :  : klass_index=1 name_and_type_index=336
+ - 336 :  : name_index=337 signature_index=338
+ - 337 :  : 'compute_multiplier_to_compensate_for_fractional_part'
+ - 338 :  : '(JD)D'
+ - 339 :  : 'fractional_payment_periods'
+ - 340 :  : 'accrued_interest'
+ - 341 :  : 'dirty_price'
+ - 342 :  : 'proposed_ytm'
+ - 343 :  : 'price_that_results_from_proposed_ytm'
+ - 344 :  : 'ytm_lower_bound'
+ - 345 :  : 'ytm_upper_bound'
+ - 346 :  : 'ytm_increment'
+ - 347 :  : 'UNREASONABLE_YTM'
+ - 348 :  : 'last_proposed_ytm'
+ - 349 :  : 'too_high_last_time'
+ - 350 :  : 'too_high'
+ - 351 :  : 'deviation'
+ - 352 :  : 'timespan_multiplier'
+ - 353 :  : 360.000000
+ - 355 :  : 'last_bond_payment'
+ - 356 :  : 'payout'
+ - 357 :  : 'ytm_short_term'
+ - 358 :  : "unexpected ratio" {0x800eb530}
+ - 359 :  : 'unexpected ratio'
+ - 360 :  : "unexpectedly high payment periods" {0x800eb580}
+ - 361 :  : 'unexpectedly high payment periods'
+ - 362 :  : 'accrued_interest_days'
+ - 363 :  : '(Lbondmetrics/Util$Interest_basis;Ljava/util/Date;Ljava/util/Date;)I'
+ - 364 :  : 1000000
+ - 366 :  : "unreasonable span of days for accrued interest=" {0x800eb5f8}
+ - 367 :  : 'unreasonable span of days for accrued interest='
+ - 368 :  : "unexpected interest basis " {0x800eb688}
+ - 369 :  : 'unexpected interest basis '
+ - 370 :  : 'date1'
+ - 371 :  : 'date2'
+ - 372 :  : 'months_between'
+ - 373 :  : 'millisecs'
+ - 374 :  : 'long_days'
+ - 375 :  : 'daily_interest_rate'
+ - 376 :  : '(Lbondmetrics/Util$Interest_basis;D)D'
+ - 377 :  : "unrecognized interest_basis=" {0x800eb6f0}
+ - 378 :  : 'unrecognized interest_basis='
+ - 379 :  : klass_index=155 name_and_type_index=380
+ - 380 :  : name_index=381 signature_index=179
+ - 381 :  : 'By_30_360'
+ - 382 :  : klass_index=155 name_and_type_index=383
+ - 383 :  : name_index=384 signature_index=179
+ - 384 :  : 'By_Actual_Actual'
+ - 385 :  : klass_index=282 name_and_type_index=386
+ - 386 :  : name_index=387 signature_index=291
+ - 387 :  : 'accrued_interest_at_settlement_static'
+ - 388 :  : klass_index=1 name_and_type_index=389
+ - 389 :  : name_index=390 signature_index=391
+ - 390 :  : 'find_coupon_payment_date_preceding_or_coinciding_with_settlement'
+ - 391 :  : '(Lbondmetrics/Util$Bond_frequency_type;Ljava/util/Date;Ljava/util/Date;)Ljava/util/Date;'
+ - 392 :  : klass_index=1 name_and_type_index=393
+ - 393 :  : name_index=394 signature_index=395
+ - 394 :  : 'accrued_interest_from_time_span'
+ - 395 :  : '(Lbondmetrics/Util$Interest_basis;DILjava/util/Date;Ljava/util/Date;)D'
+ - 396 :  : 'last_coupon_payment_date'
+ - 397 :  : 'count_months_between'
+ - 398 :  : klass_index=1 name_and_type_index=399
+ - 399 :  : name_index=397 signature_index=120
+ - 400 :  : klass_index=1 name_and_type_index=401
+ - 401 :  : name_index=402 signature_index=403
+ - 402 :  : 'month_precedes_month'
+ - 403 :  : '(II)Z'
+ - 404 :  : "bad bond frequency_type=" {0x800eb758}
+ - 405 :  : 'bad bond frequency_type='
+ - 406 :  : 'sy'
+ - 407 :  : 'sm'
+ - 408 :  : 'mm'
+ - 409 :  : 'sd'
+ - 410 :  : 'md'
+ - 411 :  : 'cy'
+ - 412 :  : 'cm'
+ - 413 :  : 'cd'
+ - 414 :  : klass_index=115 name_and_type_index=415
+ - 415 :  : name_index=416 signature_index=133
+ - 416 :  : 'Monthly'
+ - 417 :  : klass_index=115 name_and_type_index=418
+ - 418 :  : name_index=419 signature_index=133
+ - 419 :  : 'Annual'
+ - 420 :  : klass_index=115 name_and_type_index=421
+ - 421 :  : name_index=422 signature_index=133
+ - 422 :  : 'Quarterly'
+ - 423 :  : klass_index=115 name_and_type_index=424
+ - 424 :  : name_index=425 signature_index=133
+ - 425 :  : 'SemiAnnual'
+ - 426 :  : klass_index=1 name_and_type_index=427
+ - 427 :  : name_index=375 signature_index=376
+ - 428 :  : klass_index=1 name_and_type_index=429
+ - 429 :  : name_index=362 signature_index=363
+ - 430 :  : klass_index=1 name_and_type_index=431
+ - 431 :  : name_index=432 signature_index=311
+ - 432 :  : 'round_to_cent'
+ - 433 :  : 'interest_days'
+ - 434 :  : 'unrounded_accrued_interest'
+ - 435 :  : klass_index=233 name_and_type_index=436
+ - 436 :  : name_index=437 signature_index=438
+ - 437 :  : 'round'
+ - 438 :  : '(D)J'
+ - 439 :  : 'main'
+ - 440 :  : '([Ljava/lang/String;)V'
+ - 441 :  : 3.750000
+ - 443 :  : klass_index=155 name_and_type_index=444
+ - 444 :  : name_index=445 signature_index=179
+ - 445 :  : 'By_30_360_ICMA'
+ - 446 :  : klass_index=447 name_and_type_index=449
+ - 447 :  : 'java/lang/System'
+ - 448 :  : 'java/lang/System'
+ - 449 :  : name_index=450 signature_index=451
+ - 450 :  : 'out'
+ - 451 :  : 'Ljava/io/PrintStream;'
+ - 452 :  : "accrued interest is " {0x800eb7b8}
+ - 453 :  : 'accrued interest is '
+ - 454 :  : klass_index=455 name_and_type_index=457
+ - 455 :  : 'java/io/PrintStream'
+ - 456 :  : 'java/io/PrintStream'
+ - 457 :  : name_index=458 signature_index=64
+ - 458 :  : 'println'
+ - 459 :  : 'args'
+ - 460 :  : '[Ljava/lang/String;'
+ - 461 :  : 'getenv'
+ - 462 :  : '(Ljava/lang/String;)Ljava/lang/String;'
+ - 463 :  : klass_index=447 name_and_type_index=464
+ - 464 :  : name_index=461 signature_index=462
+ - 465 :  : "could not find environment variable " {0x800eb810}
+ - 466 :  : 'could not find environment variable '
+ - 467 :  : 'env_name'
+ - 468 :  : 'Ljava/lang/String;'
+ - 469 :  : 'val'
+ - 470 :  : 'java/lang/String'
+ - 471 :  : 'java/lang/String'
+ - 472 :  : 'getenvInt'
+ - 473 :  : '(Ljava/lang/String;)I'
+ - 474 :  : klass_index=1 name_and_type_index=464
+ - 475 :  : klass_index=476 name_and_type_index=478
+ - 476 :  : 'java/lang/Integer'
+ - 477 :  : 'java/lang/Integer'
+ - 478 :  : name_index=479 signature_index=473
+ - 479 :  : 'parseInt'
+ - 480 :  : "could not find parse integer from " {0x800eb888}
+ - 481 :  : 'could not find parse integer from '
+ - 482 :  : " from environment variable " {0x800eb900}
+ - 483 :  : ' from environment variable '
+ - 484 :  : 'java/lang/Exception'
+ - 485 :  : 'java/lang/Exception'
+ - 486 :  : 'valString'
+ - 487 :  : 'e'
+ - 488 :  : 'Ljava/lang/Exception;'
+ - 489 :  : klass_index=1 name_and_type_index=490
+ - 490 :  : name_index=11 signature_index=12
+ - 491 :  : klass_index=53 name_and_type_index=492
+ - 492 :  : name_index=493 signature_index=494
+ - 493 :  : 'values'
+ - 494 :  : '()[Lbondmetrics/Util$Calculator_mode;'
+ - 495 :  : klass_index=53 name_and_type_index=496
+ - 496 :  : name_index=70 signature_index=8
+ - 497 :  : klass_index=53 name_and_type_index=498
+ - 498 :  : name_index=72 signature_index=8
+ - 499 :  : klass_index=53 name_and_type_index=500
+ - 500 :  : name_index=66 signature_index=8
+ - 501 :  : 'java/lang/NoSuchFieldError'
+ - 502 :  : 'java/lang/NoSuchFieldError'
+ - 503 :  : '[I'
+ - 504 :  : klass_index=1 name_and_type_index=505
+ - 505 :  : name_index=13 signature_index=12
+ - 506 :  : klass_index=115 name_and_type_index=507
+ - 507 :  : name_index=493 signature_index=508
+ - 508 :  : '()[Lbondmetrics/Util$Bond_frequency_type;'
+ - 509 :  : klass_index=115 name_and_type_index=510
+ - 510 :  : name_index=511 signature_index=133
+ - 511 :  : 'Bimonthly'
+ - 512 :  : klass_index=115 name_and_type_index=513
+ - 513 :  : name_index=514 signature_index=133
+ - 514 :  : 'Biweekly'
+ - 515 :  : klass_index=115 name_and_type_index=516
+ - 516 :  : name_index=517 signature_index=133
+ - 517 :  : 'Certain_years_only'
+ - 518 :  : klass_index=115 name_and_type_index=519
+ - 519 :  : name_index=520 signature_index=133
+ - 520 :  : 'Changeable'
+ - 521 :  : klass_index=115 name_and_type_index=522
+ - 522 :  : name_index=523 signature_index=133
+ - 523 :  : 'Custom'
+ - 524 :  : klass_index=115 name_and_type_index=525
+ - 525 :  : name_index=526 signature_index=133
+ - 526 :  : 'Daily'
+ - 527 :  : klass_index=115 name_and_type_index=528
+ - 528 :  : name_index=529 signature_index=133
+ - 529 :  : 'Every_10_years'
+ - 530 :  : klass_index=115 name_and_type_index=531
+ - 531 :  : name_index=532 signature_index=133
+ - 532 :  : 'Every_13_weeks'
+ - 533 :  : klass_index=115 name_and_type_index=534
+ - 534 :  : name_index=535 signature_index=133
+ - 535 :  : 'Every_15_years'
+ - 536 :  : klass_index=115 name_and_type_index=537
+ - 537 :  : name_index=538 signature_index=133
+ - 538 :  : 'Every_26_weeks'
+ - 539 :  : klass_index=115 name_and_type_index=540
+ - 540 :  : name_index=541 signature_index=133
+ - 541 :  : 'Every_28_days'
+ - 542 :  : klass_index=115 name_and_type_index=543
+ - 543 :  : name_index=544 signature_index=133
+ - 544 :  : 'Every_2_years'
+ - 545 :  : klass_index=115 name_and_type_index=546
+ - 546 :  : name_index=547 signature_index=133
+ - 547 :  : 'Every_35_days'
+ - 548 :  : klass_index=115 name_and_type_index=549
+ - 549 :  : name_index=550 signature_index=133
+ - 550 :  : 'Every_3_years'
+ - 551 :  : klass_index=115 name_and_type_index=552
+ - 552 :  : name_index=553 signature_index=133
+ - 553 :  : 'Every_4_years'
+ - 554 :  : klass_index=115 name_and_type_index=555
+ - 555 :  : name_index=556 signature_index=133
+ - 556 :  : 'Every_52_weeks'
+ - 557 :  : klass_index=115 name_and_type_index=558
+ - 558 :  : name_index=559 signature_index=133
+ - 559 :  : 'Every_5_years'
+ - 560 :  : klass_index=115 name_and_type_index=561
+ - 561 :  : name_index=562 signature_index=133
+ - 562 :  : 'Every_7_years'
+ - 563 :  : klass_index=115 name_and_type_index=564
+ - 564 :  : name_index=565 signature_index=133
+ - 565 :  : 'Every_8_years'
+ - 566 :  : klass_index=115 name_and_type_index=567
+ - 567 :  : name_index=568 signature_index=133
+ - 568 :  : 'Frequency_to_be_determined'
+ - 569 :  : klass_index=115 name_and_type_index=570
+ - 570 :  : name_index=571 signature_index=133
+ - 571 :  : 'Interest_at_maturity'
+ - 572 :  : klass_index=115 name_and_type_index=573
+ - 573 :  : name_index=574 signature_index=133
+ - 574 :  : 'Irregular'
+ - 575 :  : klass_index=115 name_and_type_index=576
+ - 576 :  : name_index=577 signature_index=133
+ - 577 :  : 'Mandatory_put'
+ - 578 :  : klass_index=115 name_and_type_index=579
+ - 579 :  : name_index=580 signature_index=133
+ - 580 :  : 'Not_Applicable'
+ - 581 :  : klass_index=115 name_and_type_index=582
+ - 582 :  : name_index=583 signature_index=133
+ - 583 :  : 'One_time'
+ - 584 :  : klass_index=115 name_and_type_index=585
+ - 585 :  : name_index=586 signature_index=133
+ - 586 :  : 'Single_Interest_Payment'
+ - 587 :  : klass_index=115 name_and_type_index=588
+ - 588 :  : name_index=589 signature_index=133
+ - 589 :  : 'Term_mode'
+ - 590 :  : klass_index=115 name_and_type_index=591
+ - 591 :  : name_index=592 signature_index=133
+ - 592 :  : 'Tied_to_prime'
+ - 593 :  : klass_index=115 name_and_type_index=594
+ - 594 :  : name_index=595 signature_index=133
+ - 595 :  : 'Under_certain_circumstances'
+ - 596 :  : klass_index=115 name_and_type_index=597
+ - 597 :  : name_index=598 signature_index=133
+ - 598 :  : 'Unknown'
+ - 599 :  : klass_index=115 name_and_type_index=600
+ - 600 :  : name_index=601 signature_index=133
+ - 601 :  : 'Weekly'
+ - 602 :  : klass_index=115 name_and_type_index=603
+ - 603 :  : name_index=604 signature_index=133
+ - 604 :  : 'When_interest_adjusts_commercial_paper'
+ - 605 :  : klass_index=115 name_and_type_index=606
+ - 606 :  : name_index=607 signature_index=133
+ - 607 :  : 'Zero_coupon'
+ - 608 :  : klass_index=1 name_and_type_index=609
+ - 609 :  : name_index=14 signature_index=12
+ - 610 :  : klass_index=155 name_and_type_index=611
+ - 611 :  : name_index=493 signature_index=612
+ - 612 :  : '()[Lbondmetrics/Util$Interest_basis;'
+ - 613 :  : klass_index=155 name_and_type_index=614
+ - 614 :  : name_index=615 signature_index=179
+ - 615 :  : 'By_30E_360'
+ - 616 :  : klass_index=155 name_and_type_index=617
+ - 617 :  : name_index=618 signature_index=179
+ - 618 :  : 'By_30E_360_ISDA'
+ - 619 :  : klass_index=155 name_and_type_index=620
+ - 620 :  : name_index=621 signature_index=179
+ - 621 :  : 'By_30E_360b'
+ - 622 :  : klass_index=155 name_and_type_index=623
+ - 623 :  : name_index=624 signature_index=179
+ - 624 :  : 'By_30_360_BMA'
+ - 625 :  : klass_index=155 name_and_type_index=626
+ - 626 :  : name_index=627 signature_index=179
+ - 627 :  : 'By_30_360_Compounded_Interest'
+ - 628 :  : klass_index=155 name_and_type_index=629
+ - 629 :  : name_index=630 signature_index=179
+ - 630 :  : 'By_30_360_ISDA'
+ - 631 :  : klass_index=155 name_and_type_index=632
+ - 632 :  : name_index=633 signature_index=179
+ - 633 :  : 'By_30_360_IT'
+ - 634 :  : klass_index=155 name_and_type_index=635
+ - 635 :  : name_index=636 signature_index=179
+ - 636 :  : 'By_30_360_SIA'
+ - 637 :  : klass_index=155 name_and_type_index=638
+ - 638 :  : name_index=639 signature_index=179
+ - 639 :  : 'By_30_360_US'
+ - 640 :  : klass_index=155 name_and_type_index=641
+ - 641 :  : name_index=642 signature_index=179
+ - 642 :  : 'By_30_360_US_NASD'
+ - 643 :  : klass_index=155 name_and_type_index=644
+ - 644 :  : name_index=645 signature_index=179
+ - 645 :  : 'By_30_365'
+ - 646 :  : klass_index=155 name_and_type_index=647
+ - 647 :  : name_index=648 signature_index=179
+ - 648 :  : 'By_365_365'
+ - 649 :  : klass_index=155 name_and_type_index=650
+ - 650 :  : name_index=651 signature_index=179
+ - 651 :  : 'By_Actual_360'
+ - 652 :  : klass_index=155 name_and_type_index=653
+ - 653 :  : name_index=654 signature_index=179
+ - 654 :  : 'By_Actual_364'
+ - 655 :  : klass_index=155 name_and_type_index=656
+ - 656 :  : name_index=657 signature_index=179
+ - 657 :  : 'By_Actual_365'
+ - 658 :  : klass_index=155 name_and_type_index=659
+ - 659 :  : name_index=660 signature_index=179
+ - 660 :  : 'By_Actual_365_366_Leap_Year'
+ - 661 :  : klass_index=155 name_and_type_index=662
+ - 662 :  : name_index=663 signature_index=179
+ - 663 :  : 'By_Actual_365_366_Leap_Year_ISDA'
+ - 664 :  : klass_index=155 name_and_type_index=665
+ - 665 :  : name_index=666 signature_index=179
+ - 666 :  : 'By_Actual_Actual_ICMA'
+ - 667 :  : klass_index=155 name_and_type_index=668
+ - 668 :  : name_index=669 signature_index=179
+ - 669 :  : 'By_Bus_252'
+ - 670 :  : klass_index=155 name_and_type_index=671
+ - 671 :  : name_index=672 signature_index=179
+ - 672 :  : 'By_Future_Data_Not_Available'
+ - 673 :  : klass_index=155 name_and_type_index=674
+ - 674 :  : name_index=675 signature_index=179
+ - 675 :  : 'By_Historical_Data_Not_Available'
+ - 676 :  : klass_index=155 name_and_type_index=677
+ - 677 :  : name_index=678 signature_index=179
+ - 678 :  : 'By_NL_365_No_Leap_Year'
+ - 679 :  : 'SourceFile'
+ - 680 :  : 'Util.java'
+ - 681 :  : 'InnerClasses'
+ - 682 :  : 'Bond_frequency_type'
+ - 683 :  : 'Calculator_mode'
+ - 684 :  : 'Interest_basis'
+ - 685 :  : 'java/lang/Error'
+ - 686 :  : 'java/lang/Error'
+ - 687 :  : "Unresolved compilation problems: 
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+" {0x800eb968}
+ - 688 :  : 'Unresolved compilation problems: 
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+	days cannot be resolved to a variable
+'
+ - 689 :  : klass_index=685 name_and_type_index=63
+
+R11=0x000000006deb7080 is an unknown value
+R12=0x00000000000000c4 is an unknown value
+R13=0x00000000068eb1d8 is an unknown value
+R14=0x000000006d8e0000 is an unknown value
+R15=0x0000000000000000 is an unknown value
+
+
+Stack: [0x0000000006640000,0x0000000006740000],  sp=0x000000000673f060,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x20dc17]
+
+[error occurred during error reporting (printing native stack), id 0xc0000005]
+
+VM_Operation (0x000000000729f8d0): GetOrSetLocal, mode: safepoint, requested by thread 0x00000000068a5000
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00000000068cb000 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=99228, stack(0x0000000007730000,0x0000000007830000)]
+  0x00000000068bf800 JavaThread "C2 CompilerThread1" daemon [_thread_blocked, id=98384, stack(0x0000000007630000,0x0000000007730000)]
+  0x00000000068be000 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=102512, stack(0x0000000007530000,0x0000000007630000)]
+  0x00000000068ba000 JavaThread "JDWP Command Reader" daemon [_thread_in_native, id=102388, stack(0x0000000007430000,0x0000000007530000)]
+  0x00000000068ad000 JavaThread "JDWP Event Helper Thread" daemon [_thread_blocked, id=100808, stack(0x0000000007330000,0x0000000007430000)]
+  0x00000000068a5000 JavaThread "JDWP Transport Listener: dt_socket" daemon [_thread_blocked, id=103276, stack(0x00000000071a0000,0x00000000072a0000)]
+  0x000000000689c800 JavaThread "Attach Listener" daemon [_thread_blocked, id=100884, stack(0x0000000006c40000,0x0000000006d40000)]
+  0x0000000006897000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=103344, stack(0x0000000006b40000,0x0000000006c40000)]
+  0x000000000052f000 JavaThread "Finalizer" daemon [_thread_blocked, id=101428, stack(0x0000000006a40000,0x0000000006b40000)]
+  0x0000000000528000 JavaThread "Reference Handler" daemon [_thread_blocked, id=96280, stack(0x0000000006740000,0x0000000006840000)]
+  0x000000000059e000 JavaThread "main" [_thread_blocked, id=101904, stack(0x0000000002190000,0x0000000002290000)]
+
+Other Threads:
+=>0x0000000000520800 VMThread [stack: 0x0000000006640000,0x0000000006740000] [id=98956]
+  0x00000000068e9800 WatcherThread [stack: 0x0000000007830000,0x0000000007930000] [id=103148]
+
+VM state:at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x000000000059c610] Threads_lock - owner thread: 0x0000000000520800
+
+Heap
+ PSYoungGen      total 36736K, used 1259K [0x00000007d7000000, 0x00000007d9900000, 0x0000000800000000)
+  eden space 31488K, 4% used [0x00000007d7000000,0x00000007d713ae40,0x00000007d8ec0000)
+  from space 5248K, 0% used [0x00000007d93e0000,0x00000007d93e0000,0x00000007d9900000)
+  to   space 5248K, 0% used [0x00000007d8ec0000,0x00000007d8ec0000,0x00000007d93e0000)
+ PSOldGen        total 83968K, used 0K [0x0000000785000000, 0x000000078a200000, 0x00000007d7000000)
+  object space 83968K, 0% used [0x0000000785000000,0x0000000785000000,0x000000078a200000)
+ PSPermGen       total 21248K, used 2990K [0x000000077fe00000, 0x00000007812c0000, 0x0000000785000000)
+  object space 21248K, 14% used [0x000000077fe00000,0x00000007800ebb18,0x00000007812c0000)
+
+Code Cache  [0x0000000002590000, 0x0000000002800000, 0x0000000005590000)
+ total_blobs=164 nmethods=0 adapters=139 free_code_cache=49944384 largest_free_block=384
+
+Dynamic libraries:
+0x0000000000400000 - 0x000000000042f000 	c:\Java\jdk1.6\bin\javaw.exe
+0x00000000779a0000 - 0x0000000077b4a000 	C:\Windows\SYSTEM32\ntdll.dll
+0x0000000077780000 - 0x000000007789f000 	C:\Windows\system32\kernel32.dll
+0x000007fefd9e0000 - 0x000007fefda4a000 	C:\Windows\system32\KERNELBASE.dll
+0x000007feff940000 - 0x000007feffa1b000 	C:\Windows\system32\ADVAPI32.dll
+0x000007feffa20000 - 0x000007feffabf000 	C:\Windows\system32\msvcrt.dll
+0x000007feffbf0000 - 0x000007feffc0f000 	C:\Windows\SYSTEM32\sechost.dll
+0x000007fefe160000 - 0x000007fefe28d000 	C:\Windows\system32\RPCRT4.dll
+0x00000000778a0000 - 0x000000007799a000 	C:\Windows\system32\USER32.dll
+0x000007fefe070000 - 0x000007fefe0d7000 	C:\Windows\system32\GDI32.dll
+0x000007fefdc80000 - 0x000007fefdc8e000 	C:\Windows\system32\LPK.dll
+0x000007feff590000 - 0x000007feff65b000 	C:\Windows\system32\USP10.dll
+0x000007fefd4d0000 - 0x000007fefd527000 	C:\Windows\system32\apphelp.dll
+0x000007fedc9f0000 - 0x000007fedcbf0000 	C:\Windows\AppPatch\AppPatch64\EMET64.dll
+0x000007feff560000 - 0x000007feff58e000 	C:\Windows\system32\IMM32.DLL
+0x000007feffae0000 - 0x000007feffbe9000 	C:\Windows\system32\MSCTF.dll
+0x000000006d8e0000 - 0x000000006e09c000 	c:\Java\jdk1.6\jre\bin\server\jvm.dll
+0x000007fef7ab0000 - 0x000007fef7aeb000 	C:\Windows\system32\WINMM.dll
+0x000000006d850000 - 0x000000006d85e000 	c:\Java\jdk1.6\jre\bin\verify.dll
+0x000000006d460000 - 0x000000006d487000 	c:\Java\jdk1.6\jre\bin\java.dll
+0x000000006d4d0000 - 0x000000006d504000 	c:\Java\jdk1.6\jre\bin\jdwp.dll
+0x000000006d6f0000 - 0x000000006d6f8000 	c:\Java\jdk1.6\jre\bin\npt.dll
+0x000000006d8a0000 - 0x000000006d8b2000 	c:\Java\jdk1.6\jre\bin\zip.dll
+0x000000006d310000 - 0x000000006d319000 	c:\Java\jdk1.6\jre\bin\dt_socket.dll
+0x000007fefdc30000 - 0x000007fefdc7d000 	C:\Windows\system32\WS2_32.dll
+0x000007feff660000 - 0x000007feff668000 	C:\Windows\system32\NSI.dll
+0x000007fefb0d0000 - 0x000007fefb0e5000 	C:\Windows\system32\NLAapi.dll
+0x000007fef3f30000 - 0x000007fef3f45000 	C:\Windows\system32\napinsp.dll
+0x000007fef4060000 - 0x000007fef4079000 	C:\Windows\system32\pnrpnsp.dll
+0x000007fefce60000 - 0x000007fefceb5000 	C:\Windows\System32\mswsock.dll
+0x000007fefcce0000 - 0x000007fefcd3b000 	C:\Windows\system32\DNSAPI.dll
+0x000007fef3e00000 - 0x000007fef3e0b000 	C:\Windows\System32\winrnr.dll
+0x000007fef3df0000 - 0x000007fef3e00000 	C:\Windows\system32\wshbth.dll
+0x000007fefac90000 - 0x000007fefacb7000 	C:\Windows\system32\IPHLPAPI.DLL
+0x000007fefac80000 - 0x000007fefac8b000 	C:\Windows\system32\WINNSI.DLL
+0x000007fef9370000 - 0x000007fef93c3000 	C:\Windows\System32\fwpuclnt.dll
+0x000007fef73f0000 - 0x000007fef73f8000 	C:\Windows\system32\rasadhlp.dll
+0x000007fefc840000 - 0x000007fefc847000 	C:\Windows\System32\wshtcpip.dll
+0x0000000077b70000 - 0x0000000077b77000 	C:\Windows\system32\PSAPI.DLL
+0x000007fefacd0000 - 0x000007fefadf5000 	C:\Windows\system32\dbghelp.dll
+
+VM Arguments:
+jvm_args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:50686 -Dfile.encoding=Cp1252 
+java_command: bondmetrics.UtilTest
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=C:/Java/jdk1.6.0_43
+PATH=c:\Java\jdk1.6\jre\bin;C:/Java/jdk1.8/bin/../jre/bin/server;C:/Java/jdk1.8/bin/../jre/bin;C:/Java/jdk1.8/bin/../jre/lib/amd64;c;C:\cygwin64\Java\jdk1.6.0_43\bin;C:\Users\nelsons\Dropbox\overrides;C:\Users\nelsons\Dropbox\nodejs;C:\Users\nelsons\Dropbox\nodejs\node_modules\npm\bin;C:\cygwin64\sbin;C:\cygwin64\lib;C:\cygwin64\bin;C:\Program Files\Oracle\VirtualBox;C:\PROGRA~1\Oracle\VIRTUA~1;C:\Users\nelsons\Dropbox\bin\win64;C:\Users\nelsons\Dropbox\bin\win;C:\Users\nelsons\Dropbox\bin\perl;C:\Users\nelsons\Dropbox\bin;C:\Users\nelsons\Dropbox\maven\bin;C:\Java\jdk1.8\bin;C:\cygwin64\usr\local\bin;C:\cygwin64\BIN;C:\Windows\system32;C:\Windows;C:\cygwin64\bin;C:\cygwin64\usr\local\bin;C:\cygwin64\usr\sbin;C:\bin;C:\cygwin64\usr\X11R6\bin;C:\cygwin64\usr\X11R6\lib;C:\Users\nelsons\Dropbox\bin\ruby;C:\windows\System32\WindowsPowerShell\v1.0;C:\HashiCorp\Vagrant\bin;C:\Users\nelsons\Dropbox\cloud\ec2-api-tools-1.6.7.3\bin;C:\cygwin64\bin;C:\Users\nelsons\Dropbox\bin\backstop;C:\Users\nelsons\downloads\jruby-1.5.3\bin;C:\Users\nelsons\Dropbox\monr\bondoas\bondoas.228.win64\bondoas.228.win64.zip_dir\akalib\win64\lib;C:\Users\nelsons\Dropbox\sensu\dist\server\server_bin;C:\cygwin64\etc\sensu\server_bin;C:\Users\nelsons\Dropbox\eclipse\eclipse-SDK-4.2-win32-x86_64;
+USERNAME=x
+OS=win
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 58 Stepping 9, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 7 , 64 bit Build 7601 Service Pack 1
+
+CPU:total 4 (2 cores per cpu, 2 threads per core) family 6 model 58 stepping 9, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, ht
+
+Memory: 4k page, physical 8059928k(754968k free), swap 9663700k(1351896k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (20.45-b01) for windows-amd64 JRE (1.6.0_45-b06), built on Apr  1 2013 12:31:37 by "java_re" with MS VC++ 8.0 (VS2005)
+
+time: Mon Jul 24 06:16:37 2017
+elapsed time: 38 seconds
+

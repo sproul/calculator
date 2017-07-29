@@ -206,7 +206,7 @@ public class Util {
         // subtracting one to avoid counting payment on initial day; e.g., if the span is 3/21/16 to 3/21/17 for an annual, we expect payments to be 0
         int year_count = d2.getYear() - d1.getYear();
         if (mode_30_day_months) {
-            int months_left_over = d2.getMonth() - d1.getMonth();
+            int months_left_over = difference_in_months(d2, d1);
             int days_left_over = d2.getDate() - d1.getDate();
             switch (frequency_type) {
             case Annual:
@@ -238,6 +238,15 @@ public class Util {
         }
     }
 
+	@SuppressWarnings("deprecation")
+	private static int difference_in_months(Date d2, Date d1) {
+		int n = d2.getMonth() - d1.getMonth();
+		if (n < 0) {
+			n += 12;
+		}
+		return n;
+	}
+
 	static int number_of_quarters_between(Date d1, Date d2) {
 		int months = number_of_months_between(d1, d2);
 		return months / 3;
@@ -265,17 +274,16 @@ public class Util {
 	}
 
 	public static long number_of_days_between(Date d1, Date d2) {
-		long t1 = d1.getTime();
+		double  t1 = d1.getTime();
 		long t2 = d2.getTime();
-        if (t2 < t1) {
-            long z = t1;
-            t1 = t2;
-            t2 = z;
-        }
+		if (t2 < t1) {
+			long z = t1;
+			t1 = t2;
+			t2 = t1;
+		}
+		t2 /= 
         long dif = t2 - t1;
-        dif += (2 * 60 * 60 * 1000);    // eliminate any daylight savings time nonsense
-        long days = dif / (24 * 60 * 60 * 1000);
-		return days;
+		return dif;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -301,16 +309,16 @@ public class Util {
 		return approx_ytm;
 	}
 	
-	private static double price_from_ytm(int payments_per_year, double payment_periods, double coupon_payment, double ytm, int par) {
+	private static double price_from_ytm(int payments_per_year, long payment_periods, double coupon_payment, double ytm, int par) {
         if (payment_periods <= 0) {
             throw new RuntimeException("payment_periods must be a positive number (not " + payment_periods + ")");
         }
+		long n = payment_periods;
 		double ytm_per_payment = ytm / payments_per_year;
 		double c = coupon_payment;
-		double x = par / Math.pow(1 + ytm_per_payment, payment_periods);
-		double initial_fractional_payment_period = payment_periods - (long) payment_periods;
+		double x = par / Math.pow(1 + ytm_per_payment, n);
 		
-		for (double t = (initial_fractional_payment_period > 0) ? initial_fractional_payment_period : 1; t <= payment_periods; t++) {
+		for (int t = 1; t <= payment_periods; t++) {
             double gain_for_period = c / Math.pow(1 + ytm_per_payment, t);
             x += gain_for_period;
         }		
@@ -318,9 +326,9 @@ public class Util {
 		return price;
 	}
 
-	public static double yield_to_worst(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par, Date settlement, Date maturity, Date[] call_or_sink_dates) {
+	public static double yield_to_worst(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price, double coupon_rate, int par, Date settlement, Date maturity, Date[] call_or_sink_dates) {
         // http://www.investinganswers.com/financial-dictionary/bonds/yield-worst-ytw-2761
-        double worst = yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement, maturity);
+        double worst = yield_to_maturity(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement, maturity);
         for (int j = 0; j < call_or_sink_dates.length; j++) {
             Date cdj = call_or_sink_dates[j];
             if (cdj.getTime() < settlement.getTime()) {
@@ -329,7 +337,7 @@ public class Util {
             if (cdj.getTime() > maturity.getTime()) {
                 throw new RuntimeException("call date must precede maturity, but " + cdj + " is after " + maturity);
             }
-            double t = yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement, cdj);
+            double t = yield_to_maturity(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement, cdj);
             if (t < worst) {
                 worst = t;
             }
@@ -337,22 +345,18 @@ public class Util {
         return worst;
 	}
 	
-	@SuppressWarnings("deprecation")
-	public static double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par, Date settlement, Date maturity) {
+	public static double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double actual_price, double coupon_rate, int par, Date settlement, Date maturity) {
 		if (maturity.getTime() < settlement.getTime()) {
             throw new RuntimeException("settlement must precede maturity");
-		}
-		if (maturity.getYear()==settlement.getYear() && maturity.getMonth()==settlement.getMonth() && maturity.getDate()==settlement.getDate()) {
-            throw new RuntimeException("settlement cannot be on the same date as maturity");
 		}
         if (coupon_rate >= 1.0) {
             throw new RuntimeException("bad coupon_rate of " + coupon_rate + " (" + (100 * coupon_rate) + "%)");
         }
 		switch (Util.calculator_mode) {
         case BondOAS:
-            return BondOASwrapper.yield_to_maturity(frequency_type, clean_price, coupon_rate, par, settlement, maturity);
+            return BondOASwrapper.yield_to_maturity(frequency_type, actual_price, coupon_rate, par, settlement, maturity);
         case FtLabs:
-            return FtLabs.yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement, maturity);
+            return FtLabs.yield_to_maturity_static(frequency_type, interest_basis, actual_price, coupon_rate, par, settlement, maturity);
         default:
         	break;            	
         }
@@ -360,11 +364,12 @@ public class Util {
         interest_basis = remap_interest_basis(interest_basis);
         double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, interest_basis, settlement, maturity);
         double accrued_interest = accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
-        double dirty_price = accrued_interest + clean_price;
+        double dirty_price = accrued_interest + actual_price;
 		int payments_per_year =  number_of_payment_periods_per_year(frequency_type);
         if (fractional_payment_periods < 1) {
         	return yield_to_maturity_short_term(interest_basis, coupon_rate, dirty_price, accrued_interest, payments_per_year, par, settlement, maturity);
         }
+		long payment_periods = number_of_payment_periods_between(frequency_type, settlement, maturity) + 1;
 		double coupon_payment = coupon_rate * par / payments_per_year;
 		double proposed_ytm = yield_to_maturity_approximate(payments_per_year, fractional_payment_periods, coupon_payment, par, dirty_price);
 		double price_that_results_from_proposed_ytm;
@@ -376,7 +381,7 @@ public class Util {
 		Boolean too_high_last_time = null;
 		Boolean too_high = null;
 		do {
-			price_that_results_from_proposed_ytm = price_from_ytm(payments_per_year, fractional_payment_periods, coupon_payment, proposed_ytm, par);
+			price_that_results_from_proposed_ytm = price_from_ytm(payments_per_year, payment_periods, coupon_payment, proposed_ytm, par);
 			double deviation = Math.abs(price_that_results_from_proposed_ytm - dirty_price);
             //System.out.println("yield_to_maturity: " + ytm_lower_bound + ".." + ytm_upper_bound + " (" + deviation + ")");
             if (deviation < 0.001) {
@@ -420,20 +425,28 @@ public class Util {
 			}
 		} while (Math.abs(last_proposed_ytm - proposed_ytm) > 0.00000000001);
         
-        double ytm = proposed_ytm;
+        double timespan_multiplier = compute_multiplier_to_compensate_for_fractional_part(payment_periods, fractional_payment_periods);
+        double ytm = proposed_ytm * timespan_multiplier;
         return ytm;
 	}
 
-	// 18-30 __using_interest_days
 	private static double yield_to_maturity_short_term(Interest_basis interest_basis, double coupon_rate, double dirty_price, double accrued_interest, int payments_per_year, int par, Date settlement, Date maturity) {
         double last_bond_payment = coupon_rate * par / payments_per_year;
-        double days = interest_days_between(interest_basis, settlement, maturity);
-        double days_in_a_year = interest_days_in_a_year(interest_basis);
         double payout = par + last_bond_payment;
         double ytm_short_term = (payout / dirty_price) - 1;
-        double ytm = ytm_short_term * days_in_a_year / days;
-//        System.out.println("yield_to_maturity_short_term: days=" + days + ", dirty_price=" + dirty_price + ", ytm_short_term=" + ytm_short_term);
-        return ytm;
+        long days = number_of_days_between(settlement, maturity);
+        double ytm = ytm_short_term * 365 / days;
+		return ytm;
+	}
+
+	private static double compute_multiplier_to_compensate_for_fractional_part(	long payment_periods, double fractional_payment_periods) {
+		if (payment_periods < fractional_payment_periods - 1) {
+            throw new RuntimeException("unexpected ratio");
+        }
+		if (payment_periods > fractional_payment_periods + 1) {
+            throw new RuntimeException("unexpectedly high payment periods");
+        }
+		return payment_periods / fractional_payment_periods;
 	}
 
 	private static int number_of_payment_periods_per_year(Bond_frequency_type frequency_type) {
@@ -452,25 +465,11 @@ public class Util {
 		}
 	}
 
-	public static long interest_days_in_a_year(Interest_basis interest_basis) {
-    	interest_basis = remap_interest_basis(interest_basis);
-        switch (interest_basis) {
-        case By_30_360:
-        case By_Actual_360:
-            return 360;
-        default:
-            return 365;
-        }
-    }
-    
     /*
      * Given the interest_basis, calculate the number of days between the dates for accrued interest calculating purposes.
      */
     @SuppressWarnings("deprecation")
-	public static long interest_days_between(Interest_basis interest_basis, Date date1, Date date2) {
-        if (date2.getTime() < date1.getTime()) {
-            throw new RuntimeException("expect date1 to precede date2");
-        }
+	static int accrued_interest_days(Interest_basis interest_basis, Date date1, Date date2) {
     	interest_basis = remap_interest_basis(interest_basis);
         switch (interest_basis) {
         case By_30_360:
@@ -485,7 +484,12 @@ public class Util {
         case By_Actual_Actual:
         case By_Actual_360:
         case By_Actual_365:
-            return number_of_days_between(date1, date2);
+            long millisecs = date2.getTime() - date1.getTime();
+            long long_days = millisecs / (1000 * 24 * 60 * 60);
+            if (long_days > 1000000) {
+                throw new RuntimeException("unreasonable span of days for accrued interest=" + long_days);
+            }
+            return (int) long_days;
         default:
             throw new RuntimeException("unexpected interest basis " + interest_basis);
         }
@@ -558,49 +562,9 @@ public class Util {
         frequency_type = remap_frequency_type(frequency_type);
         interest_basis = remap_interest_basis(interest_basis);
         Date last_coupon_payment_date = find_coupon_payment_date_preceding_or_coinciding_with_settlement(frequency_type, settlement, maturity);
-        
-        last_coupon_payment_date = adjust_last_coupon_payment_date(interest_basis, last_coupon_payment_date, settlement, maturity);
-        settlement               = adjust_settlement_date(         interest_basis, last_coupon_payment_date, settlement, maturity);
-        
 		return accrued_interest_from_time_span(interest_basis, coupon_rate, par, last_coupon_payment_date, settlement);
 	}
 
-	@SuppressWarnings("deprecation")
-	private static Date adjust_settlement_date(Interest_basis interest_basis, 	Date last_coupon_payment_date, Date settlement, Date maturity) {
-		switch (interest_basis) {
-        case By_30_360:
-            // https://en.wikipedia.org/wiki/Day_count_convention#30.2F360_US
-            if (settlement.getDate() == (31 - 1) && last_coupon_payment_date.getDate()== (29 - 1)) { // d2==31 && d1==30)
-                settlement = Util.subtractDay(settlement);
-            }
-            break;
-        default:
-            ;
-        }
-		return settlement;
-	}
-	@SuppressWarnings("deprecation")
-	public static Date subtractDay(Date d) {
-		return new Date(d.getYear(), d.getMonth(), d.getDate() - 1);
-	}
-	@SuppressWarnings("deprecation")
-	public static Date addDay(Date d) {
-		return new Date(d.getYear(), d.getMonth(), 1+d.getDate());
-	}
-	@SuppressWarnings("deprecation")
-	private static Date adjust_last_coupon_payment_date(Interest_basis interest_basis, Date last_coupon_payment_date, Date settlement, Date maturity) {
-		switch (interest_basis) {
-		case By_30_360:
-			// https://en.wikipedia.org/wiki/Day_count_convention#30.2F360_US
-			if (last_coupon_payment_date.getDate()==(31 - 1)) {	// d1==31
-				last_coupon_payment_date = Util.subtractDay(last_coupon_payment_date);
-			}
-			break;
-		default:
-			;
-		}
-		return last_coupon_payment_date;
-	}
 	@SuppressWarnings("deprecation")
 	static int count_months_between(Date d1, Date d2) {
         int n = d2.getMonth() - d1.getMonth();
@@ -743,10 +707,10 @@ public class Util {
 	public static double accrued_interest_from_time_span(Interest_basis interest_basis, double coupon_rate, int par, Date d1, Date d2) {
         interest_basis = remap_interest_basis(interest_basis);
         double daily_interest_rate = daily_interest_rate(interest_basis, coupon_rate);
-        long interest_days         = interest_days_between(        interest_basis, d1, d2);
+        int    interest_days         = accrued_interest_days(        interest_basis, d1, d2);
         double unrounded_accrued_interest = par * interest_days * daily_interest_rate;
         //System.out.println("accrued_interest_from_time_span: daily_interest_rate="+daily_interest_rate+", interest_days="+interest_days);
-		return unrounded_accrued_interest;
+		return round_to_cent(unrounded_accrued_interest);
 	}
     
 	public static double round_to_cent(double p) {
@@ -781,18 +745,5 @@ public class Util {
         catch (Exception e) {
         	throw new RuntimeException("could not find parse integer from " + valString + " from environment variable " + env_name);
         }
-    }
-	@SuppressWarnings("deprecation")
-	public static String dateToString(Date d) {
-        return "" + (1 + d.getMonth()) + "/" + d.getDate() + "/" + (1900 + d.getYear() - 2000);
-    }
-    @SuppressWarnings("deprecation")
-	public static String dateRangeToString(Date d1, Date d2) {
-        String z = dateToString(d1) + "-" + dateToString(d2);
-        if (d1.getYear() == d2.getYear()) {
-            int year = d1.getYear() - 100;
-            z = z.replaceFirst("/" + year + "-", "-");
-        }
-        return z;
     }
 }

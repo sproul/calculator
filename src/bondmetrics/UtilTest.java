@@ -11,6 +11,7 @@ import java.util.Date;
 import org.junit.Test;
 
 import bondmetrics.Util.Bond_frequency_type;
+import bondmetrics.Util.Interest_basis;
 
 /*
 import java.util.Arrays;
@@ -49,45 +50,102 @@ public class FibonacciTest {
 
 public class UtilTest
 {
+    static int test_count = 0;
+    static int fail_count = 0;
+    static boolean running_as_java_app = false;
     static Util.Calculator_mode pushed_mode = Util.Calculator_mode.None;
+	private static String last_test_parms = "";
 	public static final int DEFAULT_PAR = 100;
-	private static final double MARGIN_FOR_ERROR = 0.00005;
+	private static final double MARGIN_FOR_ERROR = 0.000005;
 	
     static boolean equalish(double a, double b) {
         double diff = a - b;
         return (Math.abs(diff) < MARGIN_FOR_ERROR);
     }
+    static void expected_yield(String test_name, Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par , Date settlement_date, Date maturity_date,  
+                               double expected_accrued_interest, double fidelity_expected)
+    {
+        expected_yield(test_name, frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, expected_accrued_interest, fidelity_expected, null, null, null);
+    }
+    static void expected_yield(String test_name, Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par , Date settlement_date, Date maturity_date,  
+                               double expected_accrued_interest, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected, Double ftLabs_expected) 
+    {
+    	last_test_parms = "" + coupon_rate + " for " + Util.dateRangeToString(settlement_date, maturity_date);
+        assertEquals(expected_accrued_interest, Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date), MARGIN_FOR_ERROR);
+        expected_result(test_name, Util.yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date),
+                        fidelity_expected, bondOASexpected, bond_metrics_expected, ftLabs_expected);
+	}
     static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected, Double ftLabs_expected) {
-        if (!equalish(fidelity_expected, actual)) {
-        	System.out.println(test_name + "." + Util.calculator_mode_toString(Util.calculator_mode) +  "/fidelity disagreeement (" + actual + "/" + fidelity_expected + ")");
+        bond_metrics_expected = null;
+        test_count++;
+        boolean ok = false;
+        String z = test_name + "." + Util.calculator_mode_toString(Util.calculator_mode) + "/" + last_test_parms;
+        if (equalish(fidelity_expected, actual)) {
+            ok = true;
+        }
+        else {
+            if (bond_metrics_expected != null) { 
+                System.out.println(z + "fidelity disagreeement (" + actual + "/" + fidelity_expected + ")");
+            }
         }
         switch (Util.calculator_mode) {
         case BondOAS:
         	if (bondOASexpected != null) {
-        		assertEquals(bondOASexpected, actual, MARGIN_FOR_ERROR);
-        		return;
+        		if (ok) {
+        			System.out.println(z + "OK, but see obsolete override");
+        		}
+                assert_eq(z, bondOASexpected, actual);
+                return;
         	}
         	break;
         case FtLabs:
         	if (ftLabs_expected != null) {
-        		assertEquals(ftLabs_expected, actual, MARGIN_FOR_ERROR);
-        		return;
+        		if (ok) {
+        			System.out.println(z + "OK, but see obsolete override");
+        		}
+                assert_eq(z, ftLabs_expected, actual);
+                return;
         	}
         	break;
         case Monroe:
         	if (bond_metrics_expected != null) {
-        		assertEquals(bond_metrics_expected, actual, MARGIN_FOR_ERROR);
-        		return;
+        		if (ok) {
+        			System.out.println(z + "OK, but see obsolete override");
+        		}
+                assert_eq(z, bond_metrics_expected, actual);
+                return;
         	}
         	break;
         case None:
-            throw new RuntimeException("invalid mode of None");
+        	throw new RuntimeException("invalid mode of None");
         default:
-            throw new RuntimeException("bad mode");
+        	throw new RuntimeException("bad mode");
         }
-        assertEquals(fidelity_expected, actual, MARGIN_FOR_ERROR);
+        assert_eq(z, fidelity_expected, actual);
     }
-
+    static void assert_eq(String preamble, double expected, double actual) {
+        boolean ok = equalish(expected, actual);
+        if (!running_as_java_app) {
+            assertEquals(expected, actual, MARGIN_FOR_ERROR);
+        }
+        else {
+            String high_or_low = (actual > expected) ? "high" : "low";
+            double diff = actual - expected;
+            
+            long diffL = (long)(diff * 1000000);
+            diff = diffL / 1000000.0;
+            
+            String epilogue = "\t" + preamble + ": %f (%s)\n";
+            System.out.printf("%f\t", expected);
+            if (ok) {
+                System.out.printf("OK\t" + epilogue, diff, high_or_low);
+            }
+            else {
+                fail_count++;
+                System.out.printf("FAILED" + epilogue, diff, high_or_low);
+            }
+        }
+    }
 	static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected) {
         expected_result(test_name, actual, fidelity_expected, bondOASexpected, bond_metrics_expected, null);
     }
@@ -140,11 +198,78 @@ public class UtilTest
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
+    
+    @Test
+    public void test_settlement_same_as_maturity() {
+    	try {
+    		Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 3, 21));
+    		fail("should have complained about settlement being same as maturity");
+    	}
+    	catch (RuntimeException e) {
+    		// expected
+    	}
+    }
 
+    
+    @Test
+    public void test_30_360_yield_constant_31rst_to_1rst() {
+        double ytm31 = Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 31), Util.date(2016, 11, 21));
+        double ytm1  = Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 4,  1), Util.date(2016, 11, 21));
+        if (ytm1 != ytm31) {
+            fail("for 30/360, yield should not change going from 31rst of a month to the 1rst of the next month");
+        }       
+    }
+
+	@Test
+	public void test_number_of_days_between() {
+		assertEquals(347, Util.number_of_days_between(Util.date(2016, 11, 7), Util.date(2017, 10, 20)));
+		assertEquals(347, Util.number_of_days_between(Util.date(2017, 10, 20), Util.date(2016, 11, 7)));
+		assertEquals(1, Util.number_of_days_between(Util.date(2016, 10, 31), Util.date(2016, 11, 1)));
+        assertEquals(354, Util.number_of_days_between(Util.date(2016, 10, 31), Util.date(2017, 10, 20)));
+        assertEquals(353, Util.number_of_days_between(Util.date(2016, 11, 1), Util.date(2017, 10, 20)));
+        assertEquals(352, Util.number_of_days_between(Util.date(2016, 11, 2), Util.date(2017, 10, 20)));
+        assertEquals(351, Util.number_of_days_between(Util.date(2016, 11, 3), Util.date(2017, 10, 20)));
+        assertEquals(350, Util.number_of_days_between(Util.date(2016, 11, 4), Util.date(2017, 10, 20)));
+        assertEquals(349, Util.number_of_days_between(Util.date(2016, 11, 5), Util.date(2017, 10, 20)));
+        assertEquals(348, Util.number_of_days_between(Util.date(2016, 11, 6), Util.date(2017, 10, 20)));
+        assertEquals(346, Util.number_of_days_between(Util.date(2016, 11, 8), Util.date(2017, 10, 20)));
+        assertEquals(345, Util.number_of_days_between(Util.date(2016, 11, 9), Util.date(2017, 10, 20)));
+        assertEquals(344, Util.number_of_days_between(Util.date(2016, 11, 10), Util.date(2017, 10, 20)));
+        assertEquals(343, Util.number_of_days_between(Util.date(2016, 11, 11), Util.date(2017, 10, 20)));
+        assertEquals(365, Util.number_of_days_between(Util.date(2016, 11, 21), Util.date(2017, 11, 21)));
+        assertEquals(364, Util.number_of_days_between(Util.date(2016, 11, 21), Util.date(2017, 11, 20)));
+        assertEquals(1, Util.number_of_days_between(Util.date(2015, 2, 28), Util.date(2015, 3, 1)));
+        assertEquals(2, Util.number_of_days_between(Util.date(2016, 2, 28), Util.date(2016, 3, 1)));
+        assertEquals(3, Util.number_of_days_between(Util.date(2016, 12, 30), Util.date(2017, 1, 2)));
+        assertEquals(365, Util.number_of_days_between(Util.date(2016, 10, 20), Util.date(2017, 10, 20)));
+        assertEquals(333, Util.number_of_days_between(Util.date(2016, 11, 21), Util.date(2017, 10, 20)));
+    }
+    
 	@Test
 	public void test_fractional_payment_periods() {
         assertEquals(0.666666666666666666667, 
         		Util.fractional_number_of_payment_periods_between(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, Util.date(2017, 3, 21), Util.date(2017, 11, 21)), 
+        		MARGIN_FOR_ERROR);
+    }
+    
+	@Test
+	public void test_fractional_payment_periods2() {
+        assertEquals(0.9972,
+        		Util.fractional_number_of_payment_periods_between(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, Util.date(2016, 11, 22), Util.date(2017, 11, 21)), 
+        		MARGIN_FOR_ERROR);
+    }
+    
+	@Test
+	public void test_fractional_payment_periods2b() {
+        assertEquals(1,
+        		Util.fractional_number_of_payment_periods_between(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, Util.date(2016, 11, 21), Util.date(2017, 11, 21)), 
+        		MARGIN_FOR_ERROR);
+    }
+    
+	@Test
+	public void test_fractional_payment_periods3() {
+        assertEquals(1.00278,
+        		Util.fractional_number_of_payment_periods_between(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, Util.date(2016, 11, 20), Util.date(2017, 11, 21)), 
         		MARGIN_FOR_ERROR);
     }
     
@@ -269,52 +394,52 @@ public class UtilTest
     
     @Test
 	public void test_monthly_partial() {
-		expected_result("test_monthly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 3, 27), Util.date(2016, 11, 21)), 0.1512, 0.15421442165220767, 0.133902);
+		expected_result("test_monthly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Monthly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 3, 27), Util.date(2016, 11, 21)), 0.1512, 0.15421442165220767, 0.1513);
     }
 
 	@Test
 	public void test_quarterly_partial() {
-		expected_result("test_quarterly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1732, 0.17551058902457783, 0.17073);
+		expected_result("test_quarterly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1732, 0.17551058902457783, 0.1732);
     }
 
     @Test
 	public void test_semiannual_partial() {
-		expected_result("test_semiannual_partial", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1753, 0.17551058902457783, 0.1689);
+		expected_result("test_semiannual_partial", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1753, 0.17551058902457783);
     }
     
     @Test
 	public void test_semiannual_partial_at_par() {
-		expected_result("test_semiannual_partial_at_par", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2017, 7, 19), Util.date(2017, 7, 25)), 0.0677, 0.06965, 0.06965);
+		expected_result("test_semiannual_partial_at_par", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2017, 7, 19), Util.date(2017, 7, 25)), 0.0677, 0.06965);
     }
 
     @Test
 	public void test_semiannual_partial_at_par2() {
-		expected_result("test_semiannual_partial_at_par2", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.07, 0.068326, 0.0683226);
+		expected_result("test_semiannual_partial_at_par2", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.07, 0.068326);
     }
 
     @Test
 	public void test_semiannual_partial_at_par3() {
-        expected_result("test_semiannual_partial_at_par3", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.0682, 0.6634216, 0.066342);
+        expected_result("test_semiannual_partial_at_par3", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.0682, 0.6634216);
     }
 
     @Test
 	public void test_annual12_partial() {
-		expected_result("test_annual12_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.12, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.115384, 0.11302983, 0.11303);
+		expected_result("test_annual12_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.12, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.115384, 0.11302983);
         // fidelity 4.00 accrued
 	}
-
 	@Test
 	public void test_annual_partial_at_par2() {
-		expected_result("test_annual_partial_at_par2", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.0684, 0.06706, 0.06706);
-        // fidelity 2.33 accrued
+		expected_result("test_annual_partial_at_par2", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.0684, 0.06706);
+        // fidelity 
 	}
 	@Test
-	public void test_annual_partial_at_par() {
-		expected_result("test_annual_partial_at_par", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0.2452, null, 0.226111823848897);
-        // fidelity 33.33 accrued
+	public void test_addDay() {
+		assertEquals(Util.date(2015, 3, 1), Util.addDay(Util.date(2015, 2, 28)));
+		assertEquals(Util.date(2015, 2, 28), Util.subtractDay(Util.date(2015, 3, 1)));
+		assertEquals(Util.date(2016, 2, 29), Util.subtractDay(Util.date(2016, 3, 1)));
 	}
-    @Test
-	public void test_semiannual_partial__OAS() {
+	@Test
+	public void test_semiannual_partial__bondOAS() {
         if (!BondOASwrapper.bondOAS_library_is_available) {
             return;
         }
@@ -327,6 +452,10 @@ public class UtilTest
         }
     }
     
+    @Test
+	public void test_dateRangeToString() {
+        assertEquals("6/1-7/1/16", Util.dateRangeToString(Util.date(2016, 6, 1), Util.date(2016, 7, 1)));
+    }
     
 	@Test
 	public void test_monthly3() {
@@ -479,43 +608,43 @@ public class UtilTest
 		assertEquals(0, Util.number_of_years_between(Util.date(2017, 12, 20), Util.date(2018, 11, 30)));
 	}
 	@Test
-	public void test_accrued_interest_days() {
-		assertEquals(29, Util.accrued_interest_days(Util.Interest_basis.By_30_360, Util.date(2017, 2, 2), Util.date(2017, 3, 1)));
-		assertEquals(30, Util.accrued_interest_days(Util.Interest_basis.By_30_360, Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
-		assertEquals(31, Util.accrued_interest_days(Util.Interest_basis.By_30_360, Util.date(2017, 2, 1), Util.date(2017, 3, 2)));
-		assertEquals(27, Util.accrued_interest_days(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 2), Util.date(2017, 3, 1)));
-		assertEquals(28, Util.accrued_interest_days(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
-		assertEquals(29, Util.accrued_interest_days(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 2)));
-		assertEquals(28, Util.accrued_interest_days(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
-		assertEquals(28, Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
+	public void test_interest_days_between() {
+		assertEquals(29, Util.interest_days_between(Util.Interest_basis.By_30_360, Util.date(2017, 2, 2), Util.date(2017, 3, 1)));
+		assertEquals(30, Util.interest_days_between(Util.Interest_basis.By_30_360, Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
+		assertEquals(31, Util.interest_days_between(Util.Interest_basis.By_30_360, Util.date(2017, 2, 1), Util.date(2017, 3, 2)));
+		assertEquals(27, Util.interest_days_between(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 2), Util.date(2017, 3, 1)));
+		assertEquals(28, Util.interest_days_between(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
+		assertEquals(29, Util.interest_days_between(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 2)));
+		assertEquals(28, Util.interest_days_between(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
+		assertEquals(28, Util.interest_days_between(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1)));
     }
     @Test
-	public void test_accrued_interest_days__misc_ice_types() {
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365_366_Leap_Year_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_Compounded_Interest,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Future_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Historical_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_365_366_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_364,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Bus_252,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_365_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_Actual_Actual_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_US,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_US_NASD,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_BMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_IT,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30_360_SIA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30E_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30E_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_30E_360b,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
-		Util.accrued_interest_days(Util.Interest_basis.By_NL_365_No_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+	public void test_interest_days_between__misc_ice_types() {
+		Util.interest_days_between(Util.Interest_basis.By_Actual_Actual,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_365_366_Leap_Year_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_Compounded_Interest,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Future_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Historical_Data_Not_Available,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_365_366_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_364,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Bus_252,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_365_365,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_Actual_Actual_ICMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_US,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_US_NASD,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_BMA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_IT,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30_360_SIA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30E_360,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30E_360_ISDA,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_30E_360b,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
+		Util.interest_days_between(Util.Interest_basis.By_NL_365_No_Leap_Year,  Util.date(2017, 2, 1), Util.date(2017, 3, 1));
     }
 	@Test
 	public void test_accrued_interest_by_day() {
@@ -558,15 +687,15 @@ public class UtilTest
 	}
 	@Test
 	public void test_accrued_interest3() {
-		expected_result("test_accrued_interest3", Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 8.33, null, null, 8.27);
+		expected_result("test_accrued_interest3", Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 8.33333333333333);
 	}
 	@Test
 	public void test_accrued_interest4() {
-		assertEquals(8.33, Util.accrued_interest_from_time_span(Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2015, 11, 21), Util.date(2016, 3, 21)), 0);
+		assertEquals(8.33333333333, Util.accrued_interest_from_time_span(Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2015, 11, 21), Util.date(2016, 3, 21)), MARGIN_FOR_ERROR);
 	}
 	@Test
 	public void test_accrued_interest6() {
-		assertEquals(8.33, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), 0);
+		assertEquals(8.33333333333, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21)), MARGIN_FOR_ERROR);
 	}
 	@Test
 	public void test_count_months_between() {
@@ -704,7 +833,6 @@ public class UtilTest
         double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c2);
 		Date[] call_dates = { c1, c2 };
 		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity, call_dates);
-        System.out.println("ytm=" +ytm+", ytc1="+ytc1+", ytc2="+ytc2);
 		assertTrue("ytw < ytc2", ytw < ytc2);
 		assertTrue(ytw < ytm);
 		assertEquals(ytc1, ytw, UtilTest.MARGIN_FOR_ERROR);
@@ -727,7 +855,6 @@ public class UtilTest
         double ytc2 = Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, c2);
 		Date[] call_dates = { c1, c2 };
 		double ytw = Util.yield_to_worst(Util.Bond_frequency_type.SemiAnnual,  Util.Interest_basis.By_30_360, 103, 0.07, 100, settlement, maturity, call_dates);
-        System.out.println("ytm=" +ytm+", ytc1="+ytc2+", ytc2="+ytc2);
 		assertTrue(ytw < ytm);
 		assertEquals(ytc2, ytw, UtilTest.MARGIN_FOR_ERROR);   
     }
@@ -772,7 +899,7 @@ public class UtilTest
     @Test
 	public void test_accrued_interest2() {
     	// verified at http://apps.finra.org/Calcs/1/AccruedInterest
-    	assertEquals(6.42, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.07, 100, Util.date(2015, 10, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
+    	assertEquals(6.41666666666666, Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.07, 100, Util.date(2015, 10, 21), Util.date(2016, 11, 21)), UtilTest.MARGIN_FOR_ERROR);
     }
     @Test
 	public void test_annual12_partial__bondOAS() {
@@ -958,7 +1085,7 @@ public class UtilTest
         }
     }
     @Test
-	public void test_annual12_partial__ftLabs() {
+	public void test_annual12_partial__FtLabs() {
         push_mode(Util.Calculator_mode.FtLabs);
         try {
             test_annual12_partial();
@@ -1108,9 +1235,115 @@ public class UtilTest
             pop_mode();
         }
     }
+	@Test
+	public void test_quarterly_partial__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_quarterly_partial();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
+	public void test_semiannual_partial__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_semiannual_partial();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
+	public void test_semiannual_partial_at_par__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_semiannual_partial_at_par();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
+	public void test_semiannual_partial_at_par2__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_semiannual_partial_at_par2();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
+	public void test_semiannual_partial_at_par3__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_semiannual_partial_at_par3();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
+	public void test_annual_partial_at_par2__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_annual_partial_at_par2();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	public void test_n() {
+        test_n_interest_basis(Bond_frequency_type.Annual);
+        test_n_interest_basis(Bond_frequency_type.SemiAnnual);
+        test_n_interest_basis(Bond_frequency_type.Quarterly);
+        test_n_interest_basis(Bond_frequency_type.Monthly);
+    }
+	public void test_n_interest_basis(Bond_frequency_type frequency_type) {
+		test_n_par(frequency_type, Util.Interest_basis.By_30_360);
+        test_n_par(frequency_type, Util.Interest_basis.By_Actual_360);
+        test_n_par(frequency_type, Util.Interest_basis.By_Actual_365);
+        test_n_par(frequency_type, Util.Interest_basis.By_Actual_Actual);
+    }
+	private void test_n_par(Bond_frequency_type frequency_type, Interest_basis interest_basis) {
+        test_n_coupon_rates(frequency_type, interest_basis, 100);
+        test_n_coupon_rates(frequency_type, interest_basis, 1000);
+        test_n_coupon_rates(frequency_type, interest_basis, 25);
+        test_n_coupon_rates(frequency_type, interest_basis, 50);
+	}
+	private void test_n_coupon_rates(Bond_frequency_type frequency_type, Interest_basis interest_basis, int par) {
+        test_n_clean_price(frequency_type, interest_basis, par, 0.04);
+        test_n_clean_price(frequency_type, interest_basis, par, 0.015);
+        test_n_clean_price(frequency_type, interest_basis, par, 0.0825);
+        test_n_clean_price(frequency_type, interest_basis, par, 0.12);
+        test_n_clean_price(frequency_type, interest_basis, par, 0.215);
+    }
+    private void test_n_clean_price(Bond_frequency_type frequency_type, Interest_basis interest_basis, int par, double coupon_rate) {
+        test_n_dates(frequency_type, interest_basis, 71.5, coupon_rate, par);
+        test_n_dates(frequency_type, interest_basis, 82, coupon_rate, par);
+        test_n_dates(frequency_type, interest_basis, 95, coupon_rate, par);
+        test_n_dates(frequency_type, interest_basis, 100, coupon_rate, par);
+        test_n_dates(frequency_type, interest_basis, 107, coupon_rate, par);
+        test_n_dates(frequency_type, interest_basis, 126.2, coupon_rate, par);
+    }
+	private void test_n_dates(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par) {
+        test_n_days(frequency_type, interest_basis, clean_price, coupon_rate, par, Util.date(2016, 2, 27), Util.date(2016, 3, 2), 4);
+    }
+	public void test_n_days(Bond_frequency_type frequency_type, Util.Interest_basis interest_basis, double clean_price, double coupon_rate, int par, Date settlement_date, Date maturity_date, int days_to_repeat) {
+        for (int j = 0; j < days_to_repeat; j++) {
+        	double expected_accrued_interest = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date);
+			double expected_ytm = FtLabs.yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date);
+            //		   	System.out.printf("%f (%f): ", expected_ytm, (expected_ytm - last_expected));
+            expected_yield("", frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, expected_accrued_interest, expected_ytm);
+            settlement_date = Util.addDay(settlement_date);
+        }
+	}
 
 	public static void main(String[] args) {
-		if (args.length==0) {
+        running_as_java_app = true;
+		if (args.length!=0) {
 			System.out.println("main will cf pfr between bond_metrics and OAS");
 			double start;
 			double end;
@@ -1147,21 +1380,30 @@ public class UtilTest
 		}
 		else {
 			UtilTest ut = new UtilTest();
-			ut.test_annual_multiyear_par1000__FtLabs();
-            /*
-              double x33 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21));
-            System.out.println("main: x33=" + x33);
-            double x27 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2016, 3, 21), Util.date(2016, 11, 21));
-            System.out.println("main: x27=" + x27);
-            double x1 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
-            System.out.println("FTlabs 1.92: a/360=" + x1);
-            double x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
-            System.out.println("OK: 3/360=" + x2);
-            x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_Actual, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
-            System.out.println("OK: a/a=" + x2);
-            x2 = Util.accrued_interest_at_settlement(Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_365, 0.25, 100, Util.date(2015, 3, 1), Util.date(2016, 2, 1));
-            System.out.println("OK: a/365=" + x2);
-            */
+			ut.test_examine();
+            int success = test_count - fail_count;
+            System.out.println(success + "/" + test_count);
         }
     }
+	public void test_examine() {
+		Bond_frequency_type frequency_type = Bond_frequency_type.Monthly;
+		Util.Interest_basis interest_basis = Util.Interest_basis.By_30_360;
+		double clean_price = 95;
+		double coupon_rate = 0.07;
+		int par = 100;
+		Date settlement_date = Util.date(2016,  3, 27);
+        Date maturity_date   = Util.date(2016, 11, 21);
+        int days_to_repeat = 100;
+        for (int j = 0; j < days_to_repeat; j++) {
+        	double expected_ytm = FtLabs.yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date);
+        	double expected_accrued_interest     = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date);
+        	double expected_accrued_interest_ft = FtLabs.accrued_interest_at_settlement_static(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date);
+        	if (!equalish(expected_accrued_interest_ft, expected_accrued_interest)) {
+                System.out.printf("accrued interest mismatch -- expected %f but saw %f", expected_accrued_interest_ft, expected_accrued_interest);
+            }
+            //		   	System.out.printf("%f (%f): ", expected_ytm, (expected_ytm - last_expected));
+            expected_yield("", frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, expected_accrued_interest, expected_ytm);
+            settlement_date = Util.addDay(settlement_date);
+        }
+	}
 }
