@@ -65,18 +65,19 @@ public class UtilTest
     static void expected_yield(String test_name, Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par , Date settlement_date, Date maturity_date,  
                                double expected_accrued_interest, double fidelity_expected)
     {
-        expected_yield(test_name, frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, expected_accrued_interest, fidelity_expected, null, null, null);
+        expected_yield(test_name, frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, expected_accrued_interest, fidelity_expected, null, null);
     }
     static void expected_yield(String test_name, Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price, double coupon_rate, int par , Date settlement_date, Date maturity_date,  
-                               double expected_accrued_interest, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected, Double ftLabs_expected) 
+                               double expected_accrued_interest, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected) 
     {
     	last_test_parms = "" + coupon_rate + " for " + Util.dateRangeToString(settlement_date, maturity_date);
         assertEquals(expected_accrued_interest, Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date), MARGIN_FOR_ERROR);
         expected_result(test_name, Util.yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date),
-                        fidelity_expected, bondOASexpected, bond_metrics_expected, ftLabs_expected);
+                        fidelity_expected, bondOASexpected, bond_metrics_expected);
 	}
-    static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected, Double ftLabs_expected) {
+    static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected) {
         //bond_metrics_expected = null;
+    	//ftLabs_expected = null;
         test_count++;
         boolean ok = false;
         String z = test_name + "." + Util.calculator_mode_toString(Util.calculator_mode) + "/" + last_test_parms;
@@ -99,13 +100,6 @@ public class UtilTest
         	}
         	break;
         case FtLabs:
-        	if (ftLabs_expected != null) {
-        		if (ok) {
-        			System.out.println(z + "OK, but see obsolete override");
-        		}
-                assert_eq(z, ftLabs_expected, actual);
-                return;
-        	}
         	break;
         case Monroe:
         	if (bond_metrics_expected != null) {
@@ -146,9 +140,9 @@ public class UtilTest
             }
         }
     }
-	static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected) {
-        expected_result(test_name, actual, fidelity_expected, bondOASexpected, bond_metrics_expected, null);
-    }
+	//static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected, Double bond_metrics_expected) {
+    //    expected_result(test_name, actual, fidelity_expected, bondOASexpected, bond_metrics_expected, null);
+    //}
 
     static void expected_result(String test_name, double actual, double fidelity_expected, Double bondOASexpected) {
         expected_result(test_name, actual, fidelity_expected, bondOASexpected, null);
@@ -420,6 +414,13 @@ public class UtilTest
     @Test
 	public void test_semiannual_partial_at_par3() {
         expected_result("test_semiannual_partial_at_par3", Util.yield_to_maturity(Util.Bond_frequency_type.SemiAnnual, Util.Interest_basis.By_30_360, 100, 0.07, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.0682, 0.6634216);
+    }
+
+    @Test
+	public void test_annual_act360_v_act365() {
+        expected_result("test_annual_act360_v_act365", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_30_360, 100, 0.2, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.1702);
+        expected_result("test_annual_act360_v_act365A", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_360, 100, 0.2, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.1477); // FTlabs 0.1702
+        expected_result("test_annual_act360_v_act365B", Util.yield_to_maturity(Util.Bond_frequency_type.Annual, Util.Interest_basis.By_Actual_365, 100, 0.2, 100, Util.date(2016, 10, 6), Util.date(2016, 11, 21)), 0.1665);
     }
 
     @Test
@@ -1276,6 +1277,16 @@ public class UtilTest
         }
     }
 	@Test
+	public void test_annual_act360_v_act365__FtLabs() {
+        push_mode(Util.Calculator_mode.FtLabs);
+        try {
+            test_annual_act360_v_act365();
+        }
+        finally {
+            pop_mode();
+        }
+    }
+	@Test
 	public void test_semiannual_partial_at_par3__FtLabs() {
         push_mode(Util.Calculator_mode.FtLabs);
         try {
@@ -1300,6 +1311,9 @@ public class UtilTest
         test_n_interest_basis(Bond_frequency_type.SemiAnnual);
         test_n_interest_basis(Bond_frequency_type.Quarterly);
         test_n_interest_basis(Bond_frequency_type.Monthly);
+        int success = test_count - fail_count;
+        System.out.printf("%d/%d = %2f", success, test_count, (float)success / (float)test_count);
+        System.out.println("% success");
     }
 	public void test_n_interest_basis(Bond_frequency_type frequency_type) {
 		test_n_par(frequency_type, Util.Interest_basis.By_30_360);
@@ -1380,9 +1394,7 @@ public class UtilTest
 		}
 		else {
 			UtilTest ut = new UtilTest();
-			ut.test_examine();
-            int success = test_count - fail_count;
-            System.out.println(success + "/" + test_count);
+			ut.test_n();
         }
     }
 	public void test_examine() {
