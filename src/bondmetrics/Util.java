@@ -345,10 +345,16 @@ public class Util {
 		if (maturity.getYear()==settlement.getYear() && maturity.getMonth()==settlement.getMonth() && maturity.getDate()==settlement.getDate()) {
             throw new RuntimeException("settlement cannot be on the same date as maturity");
 		}
-        if (coupon_rate >= 1.0) {
+        Calculator_mode mode = Util.calculator_mode;
+		if (coupon_rate >= 1.0) {
             throw new RuntimeException("bad coupon_rate of " + coupon_rate + " (" + (100 * coupon_rate) + "%)");
         }
-		switch (Util.calculator_mode) {
+        else if (coupon_rate < 0) {
+        	if (mode == Calculator_mode.FtLabs) {
+        		mode = Calculator_mode.Monroe;
+        	}
+        }
+		switch (mode) {
         case BondOAS:
             throw new RuntimeException("BondOAS not supported");
             //return BondOASwrapper.yield_to_maturity(frequency_type, clean_price, coupon_rate, par, settlement, maturity);
@@ -360,7 +366,7 @@ public class Util {
         frequency_type = remap_frequency_type(frequency_type);
         interest_basis = remap_interest_basis(interest_basis);
         double fractional_payment_periods = fractional_number_of_payment_periods_between(frequency_type, interest_basis, settlement, maturity);
-        double accrued_interest = accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
+        double accrued_interest = accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity, mode);
         double dirty_price = accrued_interest + clean_price;
 		int payments_per_year =  number_of_payment_periods_per_year(frequency_type);
         if (fractional_payment_periods < 1) {
@@ -549,8 +555,8 @@ public class Util {
      * 					1.) the last coupon payment date preceding the settlement date and
      * 					2.) the settlement date.
      */
-	public static double accrued_interest_at_settlement(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement, Date maturity) {
-		switch (Util.calculator_mode) {
+	public static double accrued_interest_at_settlement(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement, Date maturity, Calculator_mode mode) {
+		switch (mode) {
         case FtLabs:
             return FtLabs.accrued_interest_at_settlement_static(frequency_type, interest_basis, coupon_rate, par, settlement, maturity);
         default:
@@ -564,6 +570,10 @@ public class Util {
         settlement               = adjust_settlement_date(         interest_basis, last_coupon_payment_date, settlement, maturity);
         
 		return accrued_interest_from_time_span(interest_basis, coupon_rate, par, last_coupon_payment_date, settlement);
+	}
+
+	public static double accrued_interest_at_settlement(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement, Date maturity) {
+		return accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement, maturity, Util.calculator_mode);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -761,7 +771,7 @@ public class Util {
 		Bond_frequency_type frequency_type = Bond_frequency_type.Quarterly;
 		Date settlement = new Date(117, 5, 30);
 		Date maturity= new Date(120, 5, 30);
-		double accrued_interest = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, 100, settlement, maturity);
+		double accrued_interest = Util.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, 100, settlement, maturity, Calculator_mode.Monroe);
 		System.out.println("accrued interest is " + accrued_interest);
 	}
 

@@ -384,7 +384,7 @@ public class UtilTest
 
 	
 	public void test_quarterly_partial() {
-		expected_result("test_quarterly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1732, 0.17551058902457783, 0.1732);
+		expected_result("test_quarterly_partial", Util.yield_to_maturity(Util.Bond_frequency_type.Quarterly, Util.Interest_basis.By_30_360, 95, 0.07, 100, Util.date(2016, 5, 15), Util.date(2016, 11, 21)), 0.1732, 0.17551058902457783);
     }
 
     
@@ -1337,7 +1337,9 @@ public class UtilTest
             pop_mode();
         }
     }
-	//@Test	For neg coupon rate, FtLabs throws a CalculationException, advising that ZeroCouponSecurity should be used, but that instrument only supports zero coupon rate (not neg) 
+	@Test	
+	// For neg coupon rate, FtLabs throws a CalculationException, advising that ZeroCouponSecurity should be used, but that instrument only supports zero coupon rate (not neg)
+	// Currently I intercept the call and resend to Monroe, even if we are in FTlabs mode
 	public void test_negative_coupon__FtLabs() {
         push_mode(Util.Calculator_mode.FtLabs);
         try {
