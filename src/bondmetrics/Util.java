@@ -142,7 +142,7 @@ public class Util {
 	}
 
     private static Calculator_mode init_calculator_mode() {
-        return Calculator_mode.Monroe;  // default
+        return Calculator_mode.FtLabs;
 	}
 
 	/**
@@ -350,7 +350,8 @@ public class Util {
         }
 		switch (Util.calculator_mode) {
         case BondOAS:
-            return BondOASwrapper.yield_to_maturity(frequency_type, clean_price, coupon_rate, par, settlement, maturity);
+            throw new RuntimeException("BondOAS not supported");
+            //return BondOASwrapper.yield_to_maturity(frequency_type, clean_price, coupon_rate, par, settlement, maturity);
         case FtLabs:
             return FtLabs.yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement, maturity);
         default:

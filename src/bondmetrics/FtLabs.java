@@ -8,7 +8,7 @@ import bondmetrics.Util.Interest_basis;
 import com.ftlabs.fisa.*;
 import com.ftlabs.fisa.calc.*;
 
-public class FtLabs implements BondCalculator {
+public abstract class FtLabs implements BondCalculator {
 
 	public static void ftlabs_sample(String[] args) {
 		try {
@@ -64,40 +64,29 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
     }
 
 	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
-                                           double coupon_rate, int par, Date settlement_date, Date maturity_date) {
-        FtLabs ft = new FtLabs();
-        return ft.yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date);
-    }
-    
+            double coupon_rate, int par, Date settlement_date, Date maturity_date) {
+		return yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, true);
+}
+
+	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
+            double coupon_rate, int par, Date settlement_date, Date maturity_date, boolean eomAdjust) {
+		FtLabs ft;
+		if (coupon_rate == 0) {
+			ft = new FtLabs_zero_coupon_rate_calculator();
+		}
+		else {
+			ft = new FtLabs_nonzero_coupon_rate_calculator();
+		}
+		return ft.yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, eomAdjust);
+	}
+
 	@Override
 	public double yield_to_maturity(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
                                     double coupon_rate, int par, Date settlement_date, Date maturity_date) {
-		double ftLabs_price_multipllier = par / 100;
-		double price_as_percentage = clean_price / ftLabs_price_multipllier; 
-        FixedInterestRateSecurity security = new FixedInterestRateSecurity( Market.US.GENERICBOND);
-        //Date payment_date_preceding_or_coinciding_with_settlement = Util.find_coupon_payment_date_preceding_or_coinciding_with_settlement(frequency_type, settlement_date, maturity_date);
-        //FISADate fisa_dated_date = date_to_FISADate(payment_date_preceding_or_coinciding_with_settlement);
-		//security.setDatedDate(fisa_dated_date);
-        FISADate fisa_maturity_date = date_to_FISADate(maturity_date);
-		security.setMaturity(fisa_maturity_date);
-		security.setParValue(100);		// strange, but seems to be necessary for the calculations to work.  Use ftLabs_price_multipllier to adjust.
-        //security.setEomAdjust(true);
-
-        security.setInterestFrequency(remap_to_fisa_bond_frequency(frequency_type));
-        security.setDayCountBasis(remap_to_fisa_interest_basis(interest_basis));
-        security.setInterestRate(coupon_rate * 100);
-        FISADate fisa_settlement_date = date_to_FISADate(settlement_date);
-        try 
-        {
-        	Calculator calculator = security.getCalculator(fisa_settlement_date);
-        	return calculator.calculateYield(price_as_percentage) / 100;
-        }
-        catch (CalculationException e) {
-        	throw new RuntimeException("unexpected exception in ftlabs yield code: " + e);
-        }
+		return yield_to_maturity(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, true);
 	}
-
-	private InterestFrequency remap_to_fisa_bond_frequency(Bond_frequency_type frequency_type) {
+	
+	protected InterestFrequency remap_to_fisa_bond_frequency(Bond_frequency_type frequency_type) {
         frequency_type = Util.remap_frequency_type(frequency_type);
 		switch (frequency_type) {
 		case Annual:
@@ -113,7 +102,7 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
 		}
 	}
 
-	private DayCountBasis remap_to_fisa_interest_basis(Interest_basis interest_basis) {
+	protected DayCountBasis remap_to_fisa_interest_basis(Interest_basis interest_basis) {
 		interest_basis = Util.remap_interest_basis(interest_basis);
 		DayCountBasis fisa_interest_basis;
         switch(interest_basis) {
@@ -136,12 +125,18 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
 	}
 	
 	@SuppressWarnings("deprecation")
-	private FISADate date_to_FISADate(Date date) {
+	protected FISADate date_to_FISADate(Date date) {
 		return new FISADate(date.getYear() + 1900, date.getMonth() + 1, date.getDate());
 	}
 
 	static double accrued_interest_at_settlement_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double coupon_rate, int par, Date settlement_date, Date maturity_date) {
-        FtLabs ft = new FtLabs();
+		FtLabs ft;
+		if (coupon_rate == 0) {
+			ft = new FtLabs_zero_coupon_rate_calculator();
+		}
+		else {
+			ft = new FtLabs_nonzero_coupon_rate_calculator();
+		}
         double unrounded_accrued_interest = 100 * ft.accrued_interest_at_settlement(frequency_type, interest_basis, coupon_rate, par, settlement_date, maturity_date);
         return unrounded_accrued_interest;
     }
