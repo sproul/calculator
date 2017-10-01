@@ -49,7 +49,7 @@ public class MarkupTest {
 			assert_markup_is(price, years_to_maturity, rating_string, null);
 		}
 		catch(RuntimeException e) {
-			
+			// expected, so we can ignore it
 		}
 	}
 
@@ -71,6 +71,13 @@ public class MarkupTest {
 
 	protected void static_assert_markup_is(double price, int years_to_maturity, String rating_string, Double expected_marked_up_price) {
         double actual_marked_up_price = Markup.calculate(price, this.type, make_date_n_years_from_now(years_to_maturity), rating_string);
+        if (expected_marked_up_price != null) {
+        	assertEquals(expected_marked_up_price, actual_marked_up_price, MarkupTest.MARGIN_FOR_ERROR);
+        }
+	}
+	
+	protected void static_assert_dollar_volume_markup_is(double price, int years_to_maturity, int number_of_securities, Double expected_marked_up_price) {
+        double actual_marked_up_price = Markup.calculate(price, this.type, make_date_n_years_from_now(years_to_maturity), number_of_securities);
         if (expected_marked_up_price != null) {
         	assertEquals(expected_marked_up_price, actual_marked_up_price, MarkupTest.MARGIN_FOR_ERROR);
         }
@@ -200,10 +207,8 @@ public class MarkupTest {
     @Test
 	public void test_wildcard_col() {
     	setup_markup_from_input_csv(Markup.Type.AGENCY, 
-                                    "irrelevant,*\n"
-    			+ "10,10.1\n"
-    			+ "11,11.1\n"
-    			+ "12,12.1\n");
+                                    	"irrelevant,10,11,12\n"
+                                    		+ "*, 10.1,11.1,12.1\n");
         assert_markup_is(101, 10, 101 + 10.1);
         assert_markup_is(101, 11, 101 + 11.1);
         assert_markup_is(101, 12, 101 + 12.1);
@@ -212,9 +217,8 @@ public class MarkupTest {
 	@Test
 	public void test_wildcard_col_and_row_range() {
         setup_markup_from_input_csv(Markup.Type.AGENCY, 
-                                    "irrelevant,*\n"
-                                    + "10,1.4\n"
-                                    + "11-13,2.4\n");
+                                    "irrelevant,10,11-13\n"
+        		+"*,1.4,2.4\n");
         assert_markup_is(101, 10, 101 + 1.4);
         assert_markup_is(101, 11, 101 + 2.4);
         assert_markup_is(101, 12, 101 + 2.4);
@@ -224,9 +228,8 @@ public class MarkupTest {
     @Test
 	public void test_wildcard_col_and_row_ge_threshold() {
         setup_markup_from_input_csv(Markup.Type.AGENCY, 
-                                    "irrelevant,*\n"
-                                    + "10,1.4\n"
-                                    + "11+,2.4\n");
+                                    "irrelevant,10,11+\n"
+        		+ "*, 1.4,2.4\n");
         assert_markup_is(101, 10, 101 + 1.4);
         assert_markup_is(101, 11, 101 + 2.4);
         assert_markup_is(101, 12, 101 + 2.4);
@@ -242,9 +245,8 @@ public class MarkupTest {
     @Test
 	public void test_greater_than_equal_with_range() {
         setup_markup_from_input_csv(Markup.Type.MUNI, 
-                                    "irrelevant,*\n"
-                                    + "10-12,98\n"
-                                    + "13+,99\n");
+                                    "irrelevant,10-12,13+\n"
+        		+"*,98,99\n");
         assert_markup_is(101, 10, null, 101 + 98.0);
         assert_markup_is(101, 11, null, 101 + 98.0);
         assert_markup_is(101, 12, null, 101 + 98.0);
@@ -343,6 +345,54 @@ public class MarkupTest {
     }
     
     @Test
+ 	public void test_matthew_v2_MUNI() {
+         setup_markup_from_input_csv(Markup.Type.MUNI, 
+                                     "Rating/Year,	0,	1,	2,	3,	4,	5,	  6-10,	   11-15,	16-20,	21+\r\n" + 
+                                     "AAA,	0.025,	0.025,	0.025,	0.03,	0.035,	0.04,	0.05,	0.075,	0.1,	0.15\r\n" + 
+                                     "AAplus,	0.025,	0.025,	0.03,	0.03,	0.04,	0.04,	0.05,	0.075,	0.1,	0.15\r\n" + 
+                                     "AA,	0.025,	0.03,	0.035,	0.035,	0.04,	0.05,	0.05,	0.075,	0.1,	0.15\r\n" + 
+                                     "AAminus,	0.025,	0.035,	0.04,	0.04,	0.045,	0.05,	0.075,	0.1,	0.125,	0.175\r\n" + 
+                                     "Aplus,	0.03,	0.04,	0.045,	0.045,	0.05,	0.055,	0.075,	0.125,	0.15,	0.2\r\n" + 
+                                     "A,	0.035,	0.045,	0.05,	0.05,	0.05,	0.055,	0.075,	0.15,	0.175,	0.2\r\n" + 
+                                     "Aminus,	0.04,	0.05,	0.05,	0.05,	0.05,	0.075,	0.125,	0.175,	0.2,	0.2\r\n" + 
+                                     "*,	0.05,	0.05,	0.075,	0.1,	0.1,	0.125,	0.15,	0.25,	0.5,	0.75\r\n"); 
+         static_assert_markup_is(101, 1, "AAA", 101 + 0.025);
+         static_assert_markup_is(101, 19, "AAA", 101 + 0.1);
+         static_assert_markup_is(101, 21, "AAA", 101 + 0.15);
+         static_assert_markup_is(101, 0, "Aplus", 101 + 0.03);
+         static_assert_markup_is(101, 2, "BBBplus", 101 + 0.075);
+         static_assert_markup_is(101, 0, "NONE", 101 + 0.05);
+     }
+    
+    @Test
+ 	public void test_matthew_v2_AGENCY() {
+         setup_markup_from_input_csv(Markup.Type.AGENCY, 
+              "$size/Maturity, 0mo,    3mo,    6mo,    9mo,    1yr,    2yr,    3yr,    4yr,    5yr,    6yr,    7yr,    8yr,    9yr,    10-14yr,15-19yr, 20yr+\r\n" + 
+              "0,              0.0075, 0.01,   0.0125, 0.015,  0.0175, 0.02,   0.0225, 0.025,  0.0275, 0.03,   0.0325, 0.035,  0.15,   0.2,    0.25,   0.75\r\n" + 
+              "250k,           0.005,  0.0075, 0.01,   0.0125, 0.015,  0.0175, 0.02,   0.0225, 0.025,  0.0275, 0.03,   0.0325, 0.1,    0.125,  0.2,    0.5\r\n" + 
+              "500k,           0.0025, 0.005,  0.0075, 0.01,   0.0125, 0.015,  0.0175, 0.02,   0.0225, 0.025,  0.0275, 0.03,   0.075,  0.1,    0.125,	0.25\r\n" + 
+              "1000k+,         0.002,  0.0025, 0.005,  0.0075, 0.01,   0.0125, 0.015,  0.0175, 0.02,   0.0225, 0.025,  0.0275, 0.03,   0.05,   0.075,	0.1\r\n" + 
+              ""); 
+         static_assert_dollar_volume_markup_is(101, 0, 5, 101 + 0.0075);
+         static_assert_dollar_volume_markup_is(101, 0, 2500, 101 + 0.005);
+         static_assert_dollar_volume_markup_is(101, 0, 5000, 101 + 0.0025);
+         static_assert_dollar_volume_markup_is(101, 0, 10000, 101 + 0.002);
+         static_assert_dollar_volume_markup_is(101, 0,  99999, 101 + 0.002);
+
+         static_assert_dollar_volume_markup_is(101, 1, 5, 101 + 0.0175);
+         static_assert_dollar_volume_markup_is(101, 1, 2500, 101 + 0.015);
+         static_assert_dollar_volume_markup_is(101, 1, 5000, 101 + 0.0125);
+         static_assert_dollar_volume_markup_is(101, 1, 10000, 101 + 0.01);
+         static_assert_dollar_volume_markup_is(101, 1,  99999, 101 + 0.01);
+
+         static_assert_dollar_volume_markup_is(101, 17, 5, 101 + 0.25);
+         static_assert_dollar_volume_markup_is(101, 17, 2500, 101 + 0.2);
+         static_assert_dollar_volume_markup_is(101, 17, 5000, 101 + 0.125);
+         static_assert_dollar_volume_markup_is(101, 17, 10000, 101 + 0.075);
+         static_assert_dollar_volume_markup_is(101, 17,  99999, 101 + 0.075);
+     }
+
+    @Test
     public void test_date_rounding() {
     	long t_now = new Date().getTime();
     	Date days3FromNow = new Date(t_now + (3 * 24 * 60 * 60 * 1000L));
@@ -359,23 +409,34 @@ public class MarkupTest {
     @Test
 	public void test_translate_time_units() {
         Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
-        assertEquals("1", sch.translate_time_units("1"));
-        assertEquals("2", sch.translate_time_units("2mo"));
-        assertEquals("1-2", sch.translate_time_units("1-2"));
-        assertEquals("1-2", sch.translate_time_units("1-2mo"));
-        assertEquals("2-3", sch.translate_time_units("2mo-3mo"));
-        assertEquals("12-23", sch.translate_time_units("1yr"));
+        Schedule.Schedule_dimension sd = sch.columns;
+        assertEquals("1", sd.translate_time_units("1"));
+        assertEquals("2", sd.translate_time_units("2mo"));
+        assertEquals("1-2", sd.translate_time_units("1-2"));
+        assertEquals("1-2", sd.translate_time_units("1-2mo"));
+        assertEquals("2-3", sd.translate_time_units("2mo-3mo"));
+        assertEquals("12-23", sd.translate_time_units("1yr"));
+    }
+
+    @Test
+	public void test_standardize_column_header() {
+        Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
+        Schedule.Schedule_dimension sd = sch.columns;
+        assertEquals("5000", sd.standardize_column_header("5k"));
+        assertEquals("25000+", sd.standardize_column_header("25k+"));
     }
 
     @Test
     public void test_translate_time_units2() {
         Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
-        assertEquals("12-15", sch.translate_time_units("1yr-15mo"));
+        Schedule.Schedule_dimension sd = sch.columns;
+        assertEquals("12-15", sd.translate_time_units("1yr-15mo"));
     }
 
     @Test
 	public void test_translate_time_units3() {
         Schedule sch = Markup.load_markup_schedule(Markup.Type.MUNI, "abc,0,1");
-        assertEquals("7-23", sch.translate_time_units("7mo-1yr"));
+        Schedule.Schedule_dimension sd = sch.columns;
+        assertEquals("7-23", sd.translate_time_units("7mo-1yr"));
     }
 }

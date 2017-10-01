@@ -65,7 +65,7 @@ Utils.displayQuoteAnalytics(quoteAnalytics, "Discount Quote: " + quote.getDiscou
 
 	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,
             double coupon_rate, int par, Date settlement_date, Date maturity_date) {
-		return yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, true);
+		return yield_to_maturity_static(frequency_type, interest_basis, clean_price, coupon_rate, par, settlement_date, maturity_date, false);
 }
 
 	static public double yield_to_maturity_static(Bond_frequency_type frequency_type, Interest_basis interest_basis, double clean_price,

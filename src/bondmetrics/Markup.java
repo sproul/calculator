@@ -36,24 +36,121 @@ public class Markup {
         DTC_SECONDARY
     }
 	
-	private static String markupPath; 
+	private static String markupPath;
+	
+	enum Schedule_dimension_data_type  { STRING, NUMERICAL, TIME };
 	
 	static class Schedule {
 		class Schedule_dimension {
-			boolean is_wildcard;
+			Schedule_dimension_data_type data_type;
 			Double greater_than_or_equal_threshold;
+			ArrayList<String> headers = null;
+	        /*
+	         * By default, times are set in terms of years to maturity.  But if the field 'time_month_mode' is true, then
+	         * times are set in terms of months to maturity.  This field is set to be true if Schedule sees time settings
+	         * "mo" or "yr" (e.g., 7mo for "7 months") when parsing the markup schedule.
+	         */
+	        private boolean time_month_mode;
+	        
+			Schedule_dimension() {
+				this.data_type = Schedule_dimension_data_type.NUMERICAL;   // default
+				this.time_month_mode = false;
+			}
+
+			/*
+			 * Adjust headers make their format consistent and simplified.
+			 * 
+			 * Time units are standardized as months, so e.g., 2yr becomes 24mo internally.
+			 * 
+			 * 25k becomes 25000.
+			 */
+	        String standardize_column_header(String header) {
+	        	header = translate_time_units(header);
+	            if (header.matches("^.*\\d+k\\+?$")) {
+	            	header = header.replaceFirst("k", "000");
+	            }
+	        	return header;
+			}
+			/*
+			 * For headers which use the "mo" or "yr" suffixes to indicate months and years, we translate
+	         * all numerical quantities to months, in order to keep the internals simple.
+	         *
+	         * Here are some examples of what the headers look like to the user, versus how they are represented internally:
+	         * 
+	         * 11		11
+	         * 11mo		11
+	         * 1mo-2mo	1-2
+	         * 
+	         * All "year" quantities are translated to month ranges that extend to the next year boundary:
+	         * 
+	         * 2yr		24-35
+	         * 1yr-2yr		12-35
+	         * 
+			 */
+	        String translate_time_units(String header) {
+	            if (header.matches(".*\\d+mo-\\d+yr$")) {
+					this.data_type = Schedule_dimension_data_type.TIME;
+	                int years = Integer.parseInt(header.replaceAll(".*-", "").replaceAll("yr$", ""));
+	                String years_str = "" + years + "yr";
+	                header = header.replaceAll(years_str, "" + ((12 * years) + 11));
+	                header = header.replaceAll("mo", "");
+	                return header;
+	            }
+	            if (header.matches(".*\\d+yr-\\d+mo$")) {
+	                int years = Integer.parseInt(header.replaceAll("yr.*", ""));
+	                String years_str = "" + years + "yr";
+	                header = header.replaceAll(years_str, "" + ((12 * years)));
+	                header = header.replaceAll("mo", "");
+	                return header;
+	            }
+	            if (header.matches(".*\\d+mo\\+?$") || header.matches("\\d+mo-.*")) {
+	                this.time_month_mode = true;
+	        		header = header.replaceAll("mo", "");
+	                return header;
+	        	}
+	        	if (header.matches("\\d+yr\\+?$") || header.matches("\\d+-\\d+yr\\+?$")) {
+	                this.time_month_mode = true;
+	        		header = header.replaceAll("yr$", "");
+	        		header = header.replaceAll("yr\\+$", "+");
+	                // simplify by treating all headers as ranges, e.g., treat "1yr" as if it were "1-1yr"
+	                boolean and_greater = header.matches(".*\\+$");
+	                if (and_greater) {
+	                    header = header.replaceAll("\\+$", "");
+	                    int months = Integer.parseInt(header) * 12;
+	                    StringBuffer sb = new StringBuffer();
+	                    sb.append(months)
+	                    .append("+");
+	                    return sb.toString();
+	                }
+	                if (!header.matches(".*-.*")) {
+	                    header = header + "-" + header;
+	                }
+	                String[] yr0_to_yr1_string = header.split("-");
+	                int yr0 = Integer.parseInt(yr0_to_yr1_string[0]);
+	                int yr1 = Integer.parseInt(yr0_to_yr1_string[1]);
+	                int mo0 =  yr0 * 12;
+	                int mo1 = (yr1 * 12) + 11;
+	                StringBuffer sb = new StringBuffer();
+	                sb.append(mo0)
+	                    .append("-")
+	                    .append(mo1);
+	                if (and_greater) {
+	                    sb.append("+");
+	                }
+	                return sb.toString();
+	        	}
+	        	return header;
+			}
 
 			String make_key_component(String dimension_value) {
-				if (this.is_wildcard) {
-					return Markup.WILD_CARD;
-				}
 				if (this.greater_than_or_equal_threshold != null) {
-					double dim_value = Double.parseDouble(dimension_value);
-					if (dim_value > this.greater_than_or_equal_threshold) {
-						
-						String threshold_string = this.greater_than_or_equal_threshold.toString();
-						threshold_string = threshold_string.replaceAll("\\.0$",  "");
-						return threshold_string;
+					if (!dimension_value.equals("*")) {
+						double dim_value = Double.parseDouble(dimension_value);
+						if (dim_value > this.greater_than_or_equal_threshold) {
+							String threshold_string = this.greater_than_or_equal_threshold.toString();
+							threshold_string = threshold_string.replaceAll("\\.0$",  "");
+							return threshold_string;
+						}
 					}
 				}
 				return dimension_value;
@@ -61,10 +158,7 @@ public class Markup {
 			public String toString() {
 				StringBuffer sb = new StringBuffer();
 				sb.append("Schedule_dimension(");
-				if (this.is_wildcard) {
-					sb.append("*");
-				}
-				else if (greater_than_or_equal_threshold != null) {
+                if (greater_than_or_equal_threshold != null) {
 					sb.append(greater_than_or_equal_threshold)
 					.append("+");
 				}
@@ -74,213 +168,94 @@ public class Markup {
 				sb.append(")");
 				return sb.toString();
 			}
+
+			public String find_closest_lesser_header(double n) {
+				if (this.data_type == Schedule_dimension_data_type.STRING) {
+                    return "" + n;
+				}
+				String last_header_that_was_lt_n = null;
+				for (int j = 0; j < this.headers.size(); j++) {
+					String header = this.headers.get(j);
+					if (header.equals(WILD_CARD)) { 
+						return WILD_CARD;
+					}
+					double header_val = Double.parseDouble(header);
+					if (header_val > n) {
+						if (last_header_that_was_lt_n == null) {
+                            throw new RuntimeException("could not find header val < " + n + " in headers " + this.headers);
+						}
+                        break;
+					}
+                    last_header_that_was_lt_n = header;
+				}
+                return last_header_that_was_lt_n;
+			}
 		}
 
-		boolean expand_ranges = true;
 		// for now max is 2; 0th is columns, 1rst dim is rows
-		ArrayList<Schedule_dimension> dims = new ArrayList<Markup.Schedule.Schedule_dimension>();
+		Schedule_dimension columns = new Schedule_dimension();
+		Schedule_dimension rows = new Schedule_dimension();
 		HashMap<String, Double> markups = new HashMap<String, Double>();
-		ArrayList<String> col_headers = null;
-		ArrayList<String> row_headers = new ArrayList<String>();
-		ArrayList<Integer> data_col_duplication_coefficients = new ArrayList<Integer>(); 
-		ArrayList<Integer> data_row_duplication_coefficients = new ArrayList<Integer>();
-        /*
-         * By default, times are set in terms of years to maturity.  But if the field 'time_month_mode' is true, then
-         * times are set in terms of months to maturity.  This field is set to be true if Schedule sees time settings
-         * "mo" or "yr" (e.g., 7mo for "7 months") when parsing the markup schedule.
-         */
-        private boolean time_month_mode;
 		
 		Schedule(InputStream csvInputStream) {
 			Reader reader = new InputStreamReader(csvInputStream);
 			BufferedReader csvInput = new BufferedReader(reader);
-			this.time_month_mode = false;
-            this.dims.add(new Schedule_dimension()); // columns 
-            this.dims.add(new Schedule_dimension()); // rows 
+			this.rows.headers = new ArrayList<String>();
             try {
                 Double row_greater_or_equal_to = null;
-                int dataRowIndex = -1;
 				while (csvInput.ready()) {
 					String line = csvInput.readLine().replaceAll("[ \t]", "");
 					if (line.matches(".*['\"].*")) {
 						throw new RuntimeException("no quotes allowed in csv input: " + line);
 					}
-					if (this.col_headers == null) {
+					if (this.columns.headers == null) {
                         String line_no_row_header = line.replaceAll("^[^,]+,", "");      // col header for the row headers is irrelevant
-						this.col_headers = stringArrayToArrayList(line_no_row_header.split(","));
+						this.columns.headers = stringArrayToArrayList(line_no_row_header.split(","));
                         Double col_greater_or_equal_to = null;
-						for (int x = 0; x < this.col_headers.size(); x++) {
-							String col_header = this.translate_time_units(this.col_headers.get(x));
-							if (col_header.equals(Markup.WILD_CARD)) {
-								if (this.col_headers.size() > 1) {
-									throw new RuntimeException("> 1 col header not allowed w/ wildcard:" + line);
-								}
-								this.dims.get(0).is_wildcard = true;
-							}
-							else if (col_header.matches("\\d+\\+$")) {
+						for (int x = 0; x < this.columns.headers.size(); x++) {
+							String col_header = columns.standardize_column_header(this.columns.headers.get(x));
+                            if (col_header.matches("\\d+\\+$")) {
 								col_header = col_header.replaceAll("\\+$", "");
-								this.col_headers.set(x, col_header);
+								this.columns.headers.set(x, col_header);
                                 if (col_greater_or_equal_to != null) {
 									throw new RuntimeException("can only be one greater_or_equal_to value for dimension 1 (cols):" + line);
 								}
 								col_greater_or_equal_to = Double.parseDouble(col_header);
-								this.dims.get(0).greater_than_or_equal_threshold = col_greater_or_equal_to;
+								columns.greater_than_or_equal_threshold = col_greater_or_equal_to;
 							}
-							if (!this.expand_ranges) {
-								data_col_duplication_coefficients.add(0);
-							}   
-							else {
-								int column_duplication_coefficient = this.resolve_duplication_coefficient(col_header);
-								data_col_duplication_coefficients.add(column_duplication_coefficient);
-								if (column_duplication_coefficient > 0) {
-									col_header = col_header.replaceAll("-.*", "");
-								}
-							}
-							this.col_headers.set(x, col_header);
+                            col_header = col_header.replaceAll("-.*", "");
+							this.columns.headers.set(x, col_header);
 						}
                     }
                     else {
-                        String row_header = this.translate_time_units(line.replaceAll(",.*", ""));
-                        if (row_header.equals(Markup.WILD_CARD)) {
-                            if (this.row_headers.size() > 1) {
-                                throw new RuntimeException("> 1 header is not allowed w/ wildcard:" + line);
-                            }
-                            this.dims.get(1).is_wildcard = true;
-                        }
-                        else if (row_header.matches("\\d+\\+$")) {
+                        String row_header = rows.standardize_column_header(line.replaceAll(",.*", ""));
+                        if (row_header.matches("\\d+\\+$")) {
                             row_header = row_header.replaceAll("\\+$", "");
 							if (row_greater_or_equal_to != null) {
                                 throw new RuntimeException("can only be one greater_or_equal_to value for dimension 1 (rows):" + line);
                             }
                             row_greater_or_equal_to = Double.parseDouble(row_header);
-                            this.dims.get(1).greater_than_or_equal_threshold = row_greater_or_equal_to;
+                            rows.greater_than_or_equal_threshold = row_greater_or_equal_to;
                         }
-                        if (!this.expand_ranges) {
-                            this.data_row_duplication_coefficients.add(0);
-                        }
-                        else {
-                            int row_duplication_coefficient = this.resolve_duplication_coefficient(row_header);
-                            this.data_row_duplication_coefficients.add(row_duplication_coefficient);
-                            if (row_duplication_coefficient > 0) {
-                                row_header = row_header.replaceAll("-.*", "");
-                            }
-                        }
-                        this.row_headers.add(row_header);
+                        row_header = row_header.replaceAll("-.*", "");
+                        this.rows.headers.add(row_header);
                         String line_no_row_header = line.replaceAll("^[^,]+,", "");        // already processed row header in the line above
                         
                         String[] row_data = line_no_row_header.split(",");
-                        if (row_data.length != col_headers.size()) {
-                            throw new RuntimeException("since there are " + col_headers.size() + " column headers, there should be the same number of data columns; but I see " + row_data.length + " columns in " + line);
+                        if (row_data.length != columns.headers.size()) {
+                            throw new RuntimeException("since there are " + columns.headers.size() + " column headers, there should be the same number of data columns; but I see " + row_data.length + " columns in " + line);
                         }
-                        for (int rangeExtendedRow = 0; rangeExtendedRow <= this.data_row_duplication_coefficients.get(dataRowIndex); rangeExtendedRow++) {
-                        	for(int colIndex = 0; colIndex < row_data.length; colIndex++) {
-                        		String col_header = this.col_headers.get(colIndex);
-                        		Double datum = Double.parseDouble(row_data[colIndex]);
-                        		// if there is no range in the headers, then this loop executes just once
-                                for (int rangeExtendedCol = 0; rangeExtendedCol <= this.data_col_duplication_coefficients.get(colIndex); rangeExtendedCol++) {
-                                    String[] dimension_keys = this.make_possibly_range_extended_key(rangeExtendedCol, rangeExtendedRow, col_header, row_header);
-                                    this.set_markup(dimension_keys, datum);
-                                }
-                            }
+                        for(int colIndex = 0; colIndex < row_data.length; colIndex++) {
+                        	String col_header = this.columns.headers.get(colIndex);
+                        	Double datum = Double.parseDouble(row_data[colIndex]);
+                        	this.set_markup(col_header, row_header, datum);
                         }
                     }
-					dataRowIndex++;
 				}
 			} catch (IOException e) {
 				throw new RuntimeException("trouble reading csvInput: ", e);
 			}
 		}
-		/*
-		 * For headers which use the "mo" or "yr" suffixes to indicate months and years, we translate
-         * all numerical quantities to months, in order to keep that internals simple.
-         *
-         * Here are some examples of what the headers look like to the user, versus how they are represented internally:
-         * 
-         * 11		11
-         * 11mo		11
-         * 1mo-2mo	1-2
-         * 
-         * All "year" quantities are translated to month ranges that extend to the next year boundary:
-         * 
-         * 2yr		24-35
-         * 1yr-2yr		12-35
-         * 
-		 */
-        String translate_time_units(String header) {
-            if (header.matches(".*\\d+mo-\\d+yr$")) {
-                int years = Integer.parseInt(header.replaceAll(".*-", "").replaceAll("yr$", ""));
-                String years_str = "" + years + "yr";
-                header = header.replaceAll(years_str, "" + ((12 * years) + 11));
-                header = header.replaceAll("mo", "");
-                return header;
-            }
-            if (header.matches(".*\\d+yr-\\d+mo$")) {
-                int years = Integer.parseInt(header.replaceAll("yr.*", ""));
-                String years_str = "" + years + "yr";
-                header = header.replaceAll(years_str, "" + ((12 * years)));
-                header = header.replaceAll("mo", "");
-                return header;
-            }
-            if (header.matches(".*\\d+mo\\+?$") || header.matches("\\d+mo-.*")) {
-                this.time_month_mode = true;
-        		header = header.replaceAll("mo", "");
-                return header;
-        	}
-        	if (header.matches("\\d+yr\\+?$") || header.matches("\\d+-\\d+yr\\+?$")) {
-                this.time_month_mode = true;
-        		header = header.replaceAll("yr$", "");
-        		header = header.replaceAll("yr\\+$", "+");
-                // simplify by treating all headers as ranges, e.g., treat "1yr" as if it were "1-1yr"
-                boolean and_greater = header.matches(".*\\+$");
-                if (and_greater) {
-                    header = header.replaceAll("\\+$", "");
-                    int months = Integer.parseInt(header) * 12;
-                    StringBuffer sb = new StringBuffer();
-                    sb.append(months)
-                    .append("+");
-                    return sb.toString();
-                }
-                if (!header.matches(".*-.*")) {
-                    header = header + "-" + header;
-                }
-                String[] yr0_to_yr1_string = header.split("-");
-                int yr0 = Integer.parseInt(yr0_to_yr1_string[0]);
-                int yr1 = Integer.parseInt(yr0_to_yr1_string[1]);
-                int mo0 =  yr0 * 12;
-                int mo1 = (yr1 * 12) + 11;
-                StringBuffer sb = new StringBuffer();
-                sb.append(mo0)
-                    .append("-")
-                    .append(mo1);
-                if (and_greater) {
-                    sb.append("+");
-                }
-                return sb.toString();
-        	}
-        	return header;
-		}
-		private String[] make_possibly_range_extended_key(int rangeExtendedCol, int rangeExtendedRow, String col_header, String row_header) {
-            if (rangeExtendedRow > 0) {
-                int base = Integer.parseInt(row_header);
-                row_header = "" + (base + rangeExtendedRow);
-            }
-            if (rangeExtendedCol > 0) {
-                int base = Integer.parseInt(col_header);
-                col_header = "" + (base + rangeExtendedCol);
-            }
-            String[] composite_key = { this.dims.get(0).make_key_component(col_header), this.dims.get(1).make_key_component(row_header) };
-            return composite_key;
-        }
-		private int resolve_duplication_coefficient(String header) {
-			if (!header.matches("^\\d+-\\d+$")) {
-				return 0;		// normal case, this is not a range
-			}
-			int range_start = Integer.parseInt(header.replaceAll("-.*", ""));
-			int range_end  = Integer.parseInt(header.replaceAll(".*-", ""));
-			int expand_to_this_number_of_columns = range_end - range_start;
-			return expand_to_this_number_of_columns;
-		}
-		
 		private ArrayList<String> stringArrayToArrayList(String[] strings) {
 	        ArrayList<String> a = new ArrayList<String>();
 	        for (String string : strings) {
@@ -288,39 +263,20 @@ public class Markup {
 			}
 			return a;
 		}
-		void add_dim(Schedule_dimension dim) {
-			this.dims.add(dim);
-		}
-		String make_key(String[] dimension_keys) {
-			if (dimension_keys == null) {
-				throw new RuntimeException("null dimension keys");
-			}
-			if (this.dims == null) {
-				throw new RuntimeException("null dims");
-			}
-			if (dimension_keys.length != this.dims.size()) {
-				throw new RuntimeException("key dimension mismatch -- expected " + this.dims.size() + " dimensions");
-			}
-			if (this.dims.size()==0) {
-				throw new RuntimeException("no dims defined");
-			}
-			StringBuffer sb = new StringBuffer();
-			for (int j = 0; j < this.dims.size(); j++) {
-				sb.append(this.dims.get(j).make_key_component(dimension_keys[j]));
-			}
-			return sb.toString();
+		String make_key(String column_val, String row_val) {
+			return column_val + row_val;
 		}
 
-		void set_markup(String[] dimension_keys, Double val) {
-			String key = this.make_key(dimension_keys);
+		void set_markup(String column_val, String row_val, double val) {
+			String key = this.make_key(column_val, row_val);
 			this.markups.put(key, val);
 		}
     
-        double get_markup(String[] dimension_keys, double price) {
-            String key = this.make_key(dimension_keys);
+        Double get_markup(String column_val, String row_val, double price) {
+            String key = this.make_key(column_val, row_val);
             Double val = this.markups.get(key);
             if (val == null) {
-            	throw new RuntimeException("no markup set for key " + key);
+            	return null;
             }
 			return val + price;
 		}
@@ -328,18 +284,16 @@ public class Markup {
     	public String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append("Schedule(")
-                .append("dims=")
-                .append(dims)
-                .append(",col_headers=")
-                .append(col_headers)
-                .append(",row_headers=")
-                .append(row_headers)
+                .append("columns=")
+                .append(columns)
+                .append("rows=")
+                .append(rows)
+                .append(",columns.headers=")
+                .append(columns.headers)
+                .append(",rows.headers=")
+                .append(rows.headers)
                 .append(",markups=")
-                .append(markups)
-                .append(",data_col_duplication_coefficients=")
-                .append(data_col_duplication_coefficients)
-                .append(",data_row_duplication_coefficients=")
-                .append(data_row_duplication_coefficients);
+                .append(markups);
             return sb.toString();
         }
 	}
@@ -350,6 +304,8 @@ public class Markup {
 	protected Rating rating;
 	protected double price;
 	protected Type type;
+	protected Integer number_of_securities;
+	
     static HashMap<Markup.Type, Schedule> type_to_schedule = new HashMap<Markup.Type, Schedule>();
 
     /**
@@ -375,6 +331,14 @@ public class Markup {
     	Markup m = new Markup(price, type, maturity, rating_string);
     	return m.calculate();
     }
+	
+    /**
+     * Given a price, bond type, date of maturity, and a count of the securities in the transaction, return the price including markup.
+     */
+	public static double calculate(double price, Type type, Date maturity, int number_of_securities) {
+    	Markup m = new Markup(price, type, maturity, number_of_securities);
+    	return m.calculate();
+	}
 
     /**
      * Given a price, bond type, and a date of maturity, construct a Markup object.
@@ -397,10 +361,17 @@ public class Markup {
      * Given a price, bond type, date of maturity, and a rating, construct a Markup object.
      */
 	Markup(double price, Type type, Date maturity, String rating_string) {
-    	this(price, type, maturity, (rating_string == null ? null : Rating.valueOf(rating_string)));
+    	this(price, type, maturity, Markup.string_toRating(rating_string));
     }
     
-    public String toString() {
+    public Markup(double price, Type type, Date maturity, int number_of_securities) {
+        this.price = price;
+        this.type = type;
+        this.maturity = maturity;
+        this.number_of_securities = number_of_securities;
+	}
+
+	public String toString() {
     	StringBuffer sb = new StringBuffer();
     	sb.append("Markup(")
     	.append("price=")
@@ -416,38 +387,57 @@ public class Markup {
     	sb.append(")");
     	return sb.toString();
     }
+    
+    String[] make_key(String x, String y) {
+    	String [] z = { x, y };
+    	return z;
+    }
 
 	/**
      * Calculate an appropriate markup for this bond.
      * 
      * Adding the value returned by this routine to this.price will give us the price visible to the user.
+     *
+     * Initially looks for an exact match on the key, then tries wildcards if needed.
      */
 	public double calculate() {
         Schedule schedule = Markup.type_to_schedule.get(this.type);
         long time_to_maturity;
-        if (schedule.time_month_mode) {
+        if (schedule.columns.time_month_mode) {
         	time_to_maturity= calculate_months_to_maturity();
         }
         else {
         	time_to_maturity= calculate_years_to_maturity();
         }
-        String[] dimension_keys = null;
-        if (rating != null) {
-        	String[] z = { "" + time_to_maturity, rating.toString() };
-        	dimension_keys = z;
+        String col_key = schedule.columns.find_closest_lesser_header(time_to_maturity);
+        String row_key;
+        if (this.number_of_securities != null) {
+        	double dollar_size = this.number_of_securities * this.price;
+        	row_key = schedule.rows.find_closest_lesser_header(dollar_size);
         }
-        else if (schedule.dims.get(0).is_wildcard) {
-        	String[] z = { WILD_CARD, "" + time_to_maturity };
-        	dimension_keys = z;
-        }
-        else if (schedule.dims.get(1).is_wildcard) {
-        	String[] z = { "" + time_to_maturity, WILD_CARD };
-        	dimension_keys = z;
+        else if (rating == null) {
+        	row_key = WILD_CARD;
         }
         else {
-        	throw new RuntimeException("bad index");
+        	row_key = rating.toString();
         }
-        return schedule.get_markup(dimension_keys, this.price);
+        Double markup = schedule.get_markup(col_key, row_key, this.price);
+        if (markup != null) {
+                return markup;
+        }
+        markup = schedule.get_markup(col_key, WILD_CARD, this.price);
+        if (markup != null) {
+                return markup;
+        }
+        markup = schedule.get_markup(WILD_CARD, row_key, this.price);
+        if (markup != null) {
+                return markup;
+        }
+        markup = schedule.get_markup(WILD_CARD, WILD_CARD, this.price);
+        if (markup != null) {
+                return markup;
+        }
+        throw new RuntimeException("no markup set for " + this);
     }
 
 	protected long calculate_months_to_maturity() {
@@ -591,6 +581,17 @@ public class Markup {
 	    markupPath = markuppath;
         for (Type type : Type.values()) {
             load_markup_schedule(type);
+        }
+    }
+    static Rating string_toRating(String ratingString) {
+        if (ratingString==null) {
+            return null;
+        }
+        try {
+            return Rating.valueOf(ratingString);
+        }
+        catch (IllegalArgumentException e) {
+            return Rating.BBBplus_or_below;  // a little hacky, but this is the catch-all
         }
     }
 	
